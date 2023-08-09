@@ -9,6 +9,11 @@
 
     <modules>
         <module>lrpc-framework-core</module>
+        <module>lrpc-framework-interface</module>
+        <module>lrpc-framework-provider</module>
+        <module>lrpc-framework-consumer</module>
+        <module>lrpc-framework-provider</module>
+        <module>lrpc-framework-interface</module>
     </modules>
 
     <packaging>pom</packaging>

@@ -12,9 +12,9 @@ import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.*;
 
 /**
  * @Description: 新版的随机筛选策略
- * @Author: 仲阳-李豪
+ * @Author: lihao726726
  * @CreateDate: 2023/8/10 9:33 上午
- * @UpdateUser: 仲阳-李豪
+ * @UpdateUser: lihao726726
  * @UpdateDate: 2023/8/10 9:33 上午
  * @Version: 1.0.0
  */

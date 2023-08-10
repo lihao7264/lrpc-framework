@@ -11,10 +11,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.*;
 
 /**
- * @Description: 随机筛选策略
- * @Author: 仲阳-李豪
+ * @Description: 随机路由策略
+ * @Author: lihao726726
  * @CreateDate: 2023/8/10 9:33 上午
- * @UpdateUser: 仲阳-李豪
+ * @UpdateUser: lihao726726
  * @UpdateDate: 2023/8/10 9:33 上午
  * @Version: 1.0.0
  */
@@ -27,6 +27,7 @@ public class RandomLRouterImpl implements LRouter {
      */
     @Override
     public void refreshRouterArr(Selector selector) {
+        // 获取服务提供者列表
         List<ChannelFutureWrapper> channelFutureWrappers = CONNECT_MAP.get(selector.getProviderServiceName());
         ChannelFutureWrapper[] arr = new ChannelFutureWrapper[channelFutureWrappers.size()];
         // 提前生成调用先后顺序的随机数组

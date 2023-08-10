@@ -21,7 +21,7 @@ public class PropertiesBootstrap {
     public static final String REGISTER_ADDRESS = "lrpc.registerAddr";
     public static final String APPLICATION_NAME = "lrpc.applicationName";
     public static final String PROXY_TYPE = "lrpc.proxyType";
-    public static final String ROUTER_TYPE = "lrpc.router";
+    public static final String ROUTER_TYPE = "lrpc.routerStrategy";
 
     /**
      * 加载服务端配置

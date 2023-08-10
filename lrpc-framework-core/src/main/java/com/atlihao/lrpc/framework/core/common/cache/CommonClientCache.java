@@ -1,9 +1,11 @@
 package com.atlihao.lrpc.framework.core.common.cache;
 
+import com.atlihao.lrpc.framework.core.common.ChannelFuturePollingRef;
 import com.atlihao.lrpc.framework.core.common.ChannelFutureWrapper;
 import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 import com.atlihao.lrpc.framework.core.common.config.ClientConfig;
 import com.atlihao.lrpc.framework.core.registry.URL;
+import com.atlihao.lrpc.framework.core.router.LRouter;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -38,12 +40,12 @@ public class CommonClientCache {
     /**
      * provider名称 --> 该服务有哪些集群URL
      */
-    public static List<String> SUBSCRIBE_SERVICE_LIST = new ArrayList<>();
+    public static List<URL> SUBSCRIBE_SERVICE_LIST = new ArrayList<>();
 
     /**
-     *
+     * com.atlihao.lrpc.test.service -> <<ip:host,urlString>,<ip:host,urlString>,<ip:host,urlString>>
      */
-    public static Map<String, List<URL>> URL_MAP = new ConcurrentHashMap<>();
+    public static Map<String, Map<String, String>> URL_MAP = new ConcurrentHashMap<>();
 
     /**
      * 服务地址
@@ -54,5 +56,21 @@ public class CommonClientCache {
      * 每次进行远程调用时，都从这里面去选择服务提供者
      */
     public static Map<String, List<ChannelFutureWrapper>> CONNECT_MAP = new ConcurrentHashMap<>();
+
+    /**
+     * 随机请求的Map
+     */
+    public static Map<String, ChannelFutureWrapper[]> SERVICE_ROUTER_MAP = new ConcurrentHashMap<>();
+
+    /**
+     * 轮训对象
+     */
+    public static ChannelFuturePollingRef CHANNEL_FUTURE_POLLING_REF = new ChannelFuturePollingRef();
+
+
+    public static LRouter LROUTER;
+
+    /*************** 随机策略方式二 ****************/
+    public static Map<String, Integer> SERVICE_ROUTER_TOTAL_WEIGHT_MAP = new ConcurrentHashMap<>();
 
 }

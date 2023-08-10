@@ -1,5 +1,6 @@
 package com.atlihao.lrpc.framework.core.common.cache;
 
+import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
 
 import java.util.HashMap;
@@ -27,4 +28,11 @@ public class CommonServerCache {
      * 提供者URL
      */
     public static final Set<URL> PROVIDER_URL_SET = new HashSet<>();
+
+
+    /**
+     * 注册服务
+     */
+    public static RegistryService REGISTRY_SERVICE;
+
 }

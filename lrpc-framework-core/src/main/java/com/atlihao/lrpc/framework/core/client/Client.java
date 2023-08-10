@@ -14,6 +14,8 @@ import com.atlihao.lrpc.framework.core.proxy.jdk.JDKProxyFactory;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import com.atlihao.lrpc.framework.core.registry.zookeeper.AbstractRegister;
 import com.atlihao.lrpc.framework.core.registry.zookeeper.ZookeeperRegister;
+import com.atlihao.lrpc.framework.core.router.RandomLRouterImpl;
+import com.atlihao.lrpc.framework.core.router.RotateLRouterImpl;
 import com.atlihao.lrpc.framework.interfaces.DataService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -26,9 +28,10 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 
-import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.SEND_QUEUE;
-import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.SUBSCRIBE_SERVICE_LIST;
+import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.*;
+import static com.atlihao.lrpc.framework.core.common.constants.RpcConstants.*;
 
 /**
  * @Description:
@@ -73,7 +76,7 @@ public class Client {
         this.clientConfig = PropertiesBootstrap.loadClientConfigFromLocal();
         // 枸酱代理类型
         RpcReference rpcReference;
-        if ("javassist".equals(clientConfig.getProxyType())) {
+        if (JAVASSIST_PROXY_TYPE.equals(clientConfig.getProxyType())) {
             rpcReference = new RpcReference(new JavassistProxyFactory());
         } else {
             rpcReference = new RpcReference(new JDKProxyFactory());
@@ -95,6 +98,9 @@ public class Client {
         url.setApplicationName(clientConfig.getApplicationName());
         url.setServiceName(serviceBean.getName());
         url.addParameter("host", CommonUtils.getIpAddress());
+        Map<String, String> result = abstractRegister.getServiceWeightMap(serviceBean.getName());
+        // 连接map
+        URL_MAP.put(serviceBean.getName(), result);
         abstractRegister.subscribe(url);
     }
 
@@ -103,17 +109,18 @@ public class Client {
      * 开始和各个provider建立连接
      */
     public void doConnectServer() {
-        for (String providerServiceName : SUBSCRIBE_SERVICE_LIST) {
-            List<String> providerIps = abstractRegister.getProviderIps(providerServiceName);
+        for (URL providerURL : SUBSCRIBE_SERVICE_LIST) {
+            List<String> providerIps = abstractRegister.getProviderIps(providerURL.getServiceName());
             for (String providerIp : providerIps) {
                 try {
-                    ConnectionHandler.connect(providerServiceName, providerIp);
+                    ConnectionHandler.connect(providerURL.getServiceName(), providerIp);
                 } catch (InterruptedException e) {
                     log.error("[doConnectServer] connect fail ", e);
                 }
             }
             URL url = new URL();
-            url.setServiceName(providerServiceName);
+            url.addParameter("servicePath", providerURL.getServiceName() + "/provider");
+            url.addParameter("providerIps", JSON.toJSONString(providerIps));
             // 添加监听
             abstractRegister.doAfterSubscribe(url);
         }
@@ -157,10 +164,25 @@ public class Client {
         }
     }
 
+    /**
+     *
+     */
+    private void initClientConfig() {
+        //初始化路由策略
+        String routerStrategy = clientConfig.getRouterStrategy();
+        if (RANDOM_ROUTER_TYPE.equals(routerStrategy)) {
+            LROUTER = new RandomLRouterImpl();
+        } else if (ROTATE_ROUTER_TYPE.equals(routerStrategy)) {
+            LROUTER = new RotateLRouterImpl();
+        }
+    }
+
     public static void main(String[] args) throws Throwable {
         Client client = new Client();
         // 初始化客户端应用
         RpcReference rpcReference = client.initClientApplication();
+        // 初始化客户端配置
+        client.initClientConfig();
         // 获取服务的代理对象
         DataService dataService = rpcReference.get(DataService.class);
         // 订阅某个服务

@@ -4,6 +4,7 @@ import com.atlihao.lrpc.framework.core.common.RpcDecoder;
 import com.atlihao.lrpc.framework.core.common.RpcEncoder;
 import com.atlihao.lrpc.framework.core.common.config.PropertiesBootstrap;
 import com.atlihao.lrpc.framework.core.common.config.ServerConfig;
+import com.atlihao.lrpc.framework.core.common.event.LRpcListenerLoader;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
@@ -17,8 +18,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.Data;
 
-import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.PROVIDER_CLASS_MAP;
-import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.PROVIDER_URL_SET;
+import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.*;
 
 /**
  * @Description:
@@ -37,7 +37,7 @@ public class Server {
 
     private ServerConfig serverConfig;
 
-    private RegistryService registryService;
+    private static LRpcListenerLoader lRpcListenerLoader;
 
 
     public void startApplication() throws InterruptedException {
@@ -82,10 +82,10 @@ public class Server {
         if (classes.length > 1) {
             throw new RuntimeException("service must only had one interfaces!");
         }
-        if (registryService == null) {
-            registryService = new ZookeeperRegister(serverConfig.getRegisterAddr());
+        if (REGISTRY_SERVICE == null) {
+            REGISTRY_SERVICE = new ZookeeperRegister(serverConfig.getRegisterAddr());
         }
-        //默认选择该对象的第一个实现接口
+        // 默认选择该对象的第一个实现接口
         Class interfaceClass = classes[0];
         PROVIDER_CLASS_MAP.put(interfaceClass.getName(), serviceBean);
         URL url = new URL();
@@ -96,7 +96,7 @@ public class Server {
         PROVIDER_URL_SET.add(url);
     }
 
-    public void batchExportUrl(){
+    public void batchExportUrl() {
         Thread task = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -106,7 +106,7 @@ public class Server {
                     e.printStackTrace();
                 }
                 for (URL url : PROVIDER_URL_SET) {
-                    registryService.register(url);
+                    REGISTRY_SERVICE.register(url);
                 }
             }
         });
@@ -118,8 +118,13 @@ public class Server {
         Server server = new Server();
         // 初始化服务端配置
         server.initServerConfig();
+        lRpcListenerLoader = new LRpcListenerLoader();
+        lRpcListenerLoader.init();
         // 暴露服务
         server.exportService(new DataServiceImpl());
+        server.exportService(new UserServiceImpl());
+        // 注册一个shutdownHook的钩子，当jvm进程关闭时触发
+        ApplicationShutdownHook.registryShutdownHook();
         // 启动服务端
         server.startApplication();
     }

@@ -1,18 +1,17 @@
 package com.atlihao.lrpc.framework.core.common.event;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 
 /**
  * @Description:
- * @Author: lihao726726
- * @CreateDate: 2023/8/9 5:54 下午
- * @UpdateUser: lihao726726
- * @UpdateDate: 2023/8/9 5:54 下午
+ * @Author: 仲阳-李豪
+ * @CreateDate: 2023/8/10 11:22 上午
+ * @UpdateUser: 仲阳-李豪
+ * @UpdateDate: 2023/8/10 11:22 上午
  * @Version: 1.0.0
  */
 @AllArgsConstructor
-public class LRpcUpdateEvent implements LRpcEvent {
+public class LRpcDestroyEvent implements LRpcEvent {
 
     private Object data;
 

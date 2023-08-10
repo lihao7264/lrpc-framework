@@ -2,6 +2,7 @@ package com.atlihao.lrpc.framework.core.client;
 
 import com.atlihao.lrpc.framework.core.common.ChannelFutureWrapper;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
+import com.atlihao.lrpc.framework.core.router.Selector;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 
@@ -11,8 +12,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.CONNECT_MAP;
-import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.SERVER_ADDRESS;
+import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.*;
 
 /**
  * @Description: 职责： 当注册中心的节点新增/移除/权重变化时，该类主要负责对内存中的url做变更
@@ -53,17 +53,27 @@ public class ConnectionHandler {
         String ip = providerAddress[0];
         Integer port = Integer.parseInt(providerAddress[1]);
         ChannelFuture channelFuture = bootstrap.connect(ip, port).sync();
+        String providerURLInfo = URL_MAP.get(providerServiceName).get(providerIp);
+
         ChannelFutureWrapper channelFutureWrapper = new ChannelFutureWrapper();
         channelFutureWrapper.setChannelFuture(channelFuture);
         channelFutureWrapper.setHost(ip);
         channelFutureWrapper.setPort(port);
+        channelFutureWrapper.setWeight(Integer.valueOf(providerURLInfo.substring(providerURLInfo.lastIndexOf(";") + 1)));
+
         SERVER_ADDRESS.add(providerIp);
         List<ChannelFutureWrapper> channelFutureWrappers = CONNECT_MAP.get(providerServiceName);
         if (CommonUtils.isEmptyList(channelFutureWrappers)) {
             channelFutureWrappers = new ArrayList<>();
         }
         channelFutureWrappers.add(channelFutureWrapper);
+        // 举例：com.atlihao.lrpc.test.UserService会被放到一个Map集合中，
+        // key:服务名字
+        // value:对应的channel通道的List集合
         CONNECT_MAP.put(providerServiceName, channelFutureWrappers);
+        Selector selector = new Selector();
+        selector.setProviderServiceName(providerServiceName);
+        LROUTER.refreshRouterArr(selector);
     }
 
     /**
@@ -110,7 +120,9 @@ public class ConnectionHandler {
         if (CommonUtils.isEmptyList(channelFutureWrappers)) {
             throw new RuntimeException("no provider exist for " + providerServiceName);
         }
-        ChannelFuture channelFuture = channelFutureWrappers.get(ThreadLocalRandom.current().nextInt(channelFutureWrappers.size())).getChannelFuture();
+        Selector selector = new Selector();
+        selector.setProviderServiceName(providerServiceName);
+        ChannelFuture channelFuture = LROUTER.select(selector).getChannelFuture();
         return channelFuture;
     }
 }

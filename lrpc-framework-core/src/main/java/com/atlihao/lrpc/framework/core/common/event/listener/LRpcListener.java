@@ -1,4 +1,4 @@
-package com.atlihao.lrpc.framework.core.common.event;
+package com.atlihao.lrpc.framework.core.common.event.listener;
 
 /**
  * @Description:

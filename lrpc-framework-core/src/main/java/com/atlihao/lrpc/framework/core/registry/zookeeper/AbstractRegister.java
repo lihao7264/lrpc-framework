@@ -4,6 +4,7 @@ import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.SUBSCRIBE_SERVICE_LIST;
 import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.PROVIDER_URL_SET;
@@ -30,7 +31,7 @@ public abstract class AbstractRegister implements RegistryService {
 
     @Override
     public void subscribe(URL url) {
-        SUBSCRIBE_SERVICE_LIST.add(url.getServiceName());
+        SUBSCRIBE_SERVICE_LIST.add(url);
     }
 
     /**
@@ -55,9 +56,17 @@ public abstract class AbstractRegister implements RegistryService {
      */
     public abstract List<String> getProviderIps(String serviceName);
 
+    /**
+     * 获取服务的权重信息
+     *
+     * @param serviceName
+     * @return <ip:port --> urlString>,<ip:port --> urlString>,<ip:port --> urlString>,<ip:port --> urlString>
+     */
+    public abstract Map<String, String> getServiceWeightMap(String serviceName);
+
 
     @Override
     public void doUnSubscribe(URL url) {
-        SUBSCRIBE_SERVICE_LIST.remove(url.getServiceName());
+        SUBSCRIBE_SERVICE_LIST.remove(url);
     }
 }

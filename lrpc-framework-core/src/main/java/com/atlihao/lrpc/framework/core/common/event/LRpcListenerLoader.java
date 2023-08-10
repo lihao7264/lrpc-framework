@@ -1,5 +1,8 @@
 package com.atlihao.lrpc.framework.core.common.event;
 
+import com.atlihao.lrpc.framework.core.common.event.listener.LRpcListener;
+import com.atlihao.lrpc.framework.core.common.event.listener.ProviderNodeDataChangeListener;
+import com.atlihao.lrpc.framework.core.common.event.listener.ServiceDestroyListener;
 import com.atlihao.lrpc.framework.core.common.event.listener.ServiceUpdateListener;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 
@@ -30,6 +33,8 @@ public class LRpcListenerLoader {
 
     public void init() {
         registerListener(new ServiceUpdateListener());
+        registerListener(new ServiceDestroyListener());
+        registerListener(new ProviderNodeDataChangeListener());
     }
 
     /**
@@ -45,6 +50,28 @@ public class LRpcListenerLoader {
             return (Class<?>) type;
         }
         return null;
+    }
+
+    /**
+     * 同步事件处理，可能会堵塞
+     *
+     * @param lRpcEvent
+     */
+    public static void sendSyncEvent(LRpcEvent lRpcEvent) {
+        System.out.println(lRpcListenerList);
+        if (CommonUtils.isEmptyList(lRpcListenerList)) {
+            return;
+        }
+        for (LRpcListener<?> lRpcListener : lRpcListenerList) {
+            Class<?> type = getInterfaceT(lRpcListener);
+            if (lRpcListener.getClass().equals(type)) {
+                try {
+                    lRpcListener.callBack(lRpcEvent.getData());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public static void sendEvent(LRpcEvent lRpcEvent) {

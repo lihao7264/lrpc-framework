@@ -78,13 +78,16 @@ public class URL {
     public static ProviderNodeInfo buildURLFromUrlStr(String providerNodeStr) {
         String[] items = providerNodeStr.split("/");
         ProviderNodeInfo providerNodeInfo = new ProviderNodeInfo();
-        providerNodeInfo.setServiceName(items[2]);
-        providerNodeInfo.setAddress(items[4]);
+        providerNodeInfo.setServiceName(items[1]);
+        providerNodeInfo.setAddress(items[2]);
+        providerNodeInfo.setRegistryTime(items[3]);
+        providerNodeInfo.setWeight(Integer.valueOf(items[4]));
         return providerNodeInfo;
     }
 
     /**
      * ProviderNodeInfo(serviceName=com.atlihao.lrpc.framework.interfaces.DataService, address=10.1.21.11:9092)
+     *
      * @param args
      */
     public static void main(String[] args) {

@@ -1,6 +1,7 @@
 package com.atlihao.lrpc.framework.core.common.config;
 
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -66,6 +67,19 @@ public class PropertiesLoader {
             propertiesMap.put(key, value);
         }
         return String.valueOf(propertiesMap.get(key));
+    }
+
+    public static String getPropertiesNotBlank(String key) {
+        String val = getPropertiesStr(key);
+        if (StringUtils.isBlank(val)) {
+            throw new IllegalArgumentException(key + " 配置为空异常");
+        }
+        return val;
+    }
+
+    public static String getPropertiesStrDefault(String key, String defaultVal) {
+        String val = getPropertiesStr(key);
+        return StringUtils.isBlank(val) ? defaultVal : val;
     }
 
     /**

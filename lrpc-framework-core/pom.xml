@@ -19,6 +19,8 @@
         <zookeeper.version>3.4.14</zookeeper.version>
         <zkClient.version>0.7</zkClient.version>
         <curator.version>2.12.0</curator.version>
+        <commons-collections.version>3.2.2</commons-collections.version>
+        <commons-lang.version>2.6</commons-lang.version>
     </properties>
 
     <dependencies>
@@ -81,6 +83,18 @@
             <groupId>com.101tec</groupId>
             <artifactId>zkclient</artifactId>
             <version>${zkClient.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>${commons-collections.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${commons-lang.version}</version>
         </dependency>
     </dependencies>
 

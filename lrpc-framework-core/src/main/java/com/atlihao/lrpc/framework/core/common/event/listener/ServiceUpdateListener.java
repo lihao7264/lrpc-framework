@@ -3,13 +3,10 @@ package com.atlihao.lrpc.framework.core.common.event.listener;
 import com.atlihao.lrpc.framework.core.client.ConnectionHandler;
 import com.atlihao.lrpc.framework.core.common.ChannelFutureWrapper;
 import com.atlihao.lrpc.framework.core.common.event.LRpcEvent;
-import com.atlihao.lrpc.framework.core.common.event.LRpcListener;
 import com.atlihao.lrpc.framework.core.common.event.data.URLChangeWrapper;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 import io.netty.channel.ChannelFuture;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;

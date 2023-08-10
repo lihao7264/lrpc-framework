@@ -27,7 +27,14 @@ public class ClientConfig {
 
     /**
      * 代理类型
+     * 举例：jdk、javassist
      */
     private String proxyType;
+
+    /**
+     * 负载均衡策略
+     * 举例：random、newRandom、rotate
+     */
+    private String routerStrategy;
 
 }

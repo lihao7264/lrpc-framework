@@ -2,7 +2,12 @@ package com.atlihao.lrpc.framework.core.server;
 
 import com.atlihao.lrpc.framework.core.common.RpcDecoder;
 import com.atlihao.lrpc.framework.core.common.RpcEncoder;
+import com.atlihao.lrpc.framework.core.common.config.PropertiesBootstrap;
 import com.atlihao.lrpc.framework.core.common.config.ServerConfig;
+import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
+import com.atlihao.lrpc.framework.core.registry.RegistryService;
+import com.atlihao.lrpc.framework.core.registry.URL;
+import com.atlihao.lrpc.framework.core.registry.zookeeper.ZookeeperRegister;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -13,6 +18,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.Data;
 
 import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.PROVIDER_CLASS_MAP;
+import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.PROVIDER_URL_SET;
 
 /**
  * @Description:
@@ -30,6 +36,8 @@ public class Server {
     private static EventLoopGroup workerGroup = null;
 
     private ServerConfig serverConfig;
+
+    private RegistryService registryService;
 
 
     public void startApplication() throws InterruptedException {
@@ -52,10 +60,21 @@ public class Server {
                 ch.pipeline().addLast(new ServerHandler());
             }
         });
-        bootstrap.bind(serverConfig.getPort()).sync();
+        this.batchExportUrl();
+        bootstrap.bind(serverConfig.getServerPort()).sync();
     }
 
-    public void registryService(Object serviceBean) {
+    public void initServerConfig() {
+        ServerConfig serverConfig = PropertiesBootstrap.loadServerConfigFromLocal();
+        this.setServerConfig(serverConfig);
+    }
+
+    /**
+     * 暴露服务信息
+     *
+     * @param serviceBean
+     */
+    public void exportService(Object serviceBean) {
         if (serviceBean.getClass().getInterfaces().length == 0) {
             throw new RuntimeException("service must had interfaces!");
         }
@@ -63,17 +82,46 @@ public class Server {
         if (classes.length > 1) {
             throw new RuntimeException("service must only had one interfaces!");
         }
+        if (registryService == null) {
+            registryService = new ZookeeperRegister(serverConfig.getRegisterAddr());
+        }
+        //默认选择该对象的第一个实现接口
         Class interfaceClass = classes[0];
-        // <提供者class,提供者的实例>
         PROVIDER_CLASS_MAP.put(interfaceClass.getName(), serviceBean);
+        URL url = new URL();
+        url.setServiceName(interfaceClass.getName());
+        url.setApplicationName(serverConfig.getApplicationName());
+        url.addParameter("host", CommonUtils.getIpAddress());
+        url.addParameter("port", String.valueOf(serverConfig.getServerPort()));
+        PROVIDER_URL_SET.add(url);
     }
+
+    public void batchExportUrl(){
+        Thread task = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                for (URL url : PROVIDER_URL_SET) {
+                    registryService.register(url);
+                }
+            }
+        });
+        task.start();
+    }
+
 
     public static void main(String[] args) throws InterruptedException {
         Server server = new Server();
-        ServerConfig serverConfig = new ServerConfig();
-        serverConfig.setPort(9090);
-        server.setServerConfig(serverConfig);
-        server.registryService(new DataServiceImpl());
+        // 初始化服务端配置
+        server.initServerConfig();
+        // 暴露服务
+        server.exportService(new DataServiceImpl());
+        // 启动服务端
         server.startApplication();
     }
+
 }

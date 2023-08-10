@@ -16,8 +16,18 @@ import lombok.ToString;
 public class ServerConfig {
 
     /**
-     * 端口
+     * 服务端口
      */
-    private Integer port;
+    private Integer serverPort;
+
+    /**
+     * 注册中心地址
+     */
+    private String registerAddr;
+
+    /**
+     * 应用名
+     */
+    private String applicationName;
 
 }

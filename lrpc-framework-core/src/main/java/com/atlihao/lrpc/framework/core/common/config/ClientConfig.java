@@ -16,13 +16,18 @@ import lombok.ToString;
 public class ClientConfig {
 
     /**
-     * 客户端端口
+     * 应用名
      */
-    private Integer port;
+    private String applicationName;
 
     /**
-     * 客户端服务地址
+     * 注册中心地址
      */
-    private String serverAddr;
+    private String registerAddr;
+
+    /**
+     * 代理类型
+     */
+    private String proxyType;
 
 }

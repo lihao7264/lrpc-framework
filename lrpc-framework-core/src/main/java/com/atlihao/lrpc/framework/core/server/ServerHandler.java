@@ -1,6 +1,5 @@
 package com.atlihao.lrpc.framework.core.server;
 
-import com.alibaba.fastjson.JSON;
 import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 import com.atlihao.lrpc.framework.core.common.RpcProtocol;
 import io.netty.channel.Channel;
@@ -11,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.PROVIDER_CLASS_MAP;
+import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.SERVER_SERIALIZE_FACTORY;
 
 /**
  * @Description: 服务端接收数据后的处理器
@@ -26,8 +26,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws InvocationTargetException, IllegalAccessException {
         // 服务端接收数据时，统一以RpcProtocol协议的格式接收
         RpcProtocol rpcProtocol = (RpcProtocol) msg;
-        String json = new String(rpcProtocol.getContent(), 0, rpcProtocol.getContentLength());
-        RpcInvocation rpcInvocation = JSON.parseObject(json, RpcInvocation.class);
+        RpcInvocation rpcInvocation = SERVER_SERIALIZE_FACTORY.deserialize(rpcProtocol.getContent(), RpcInvocation.class);
         // PROVIDER_CLASS_MAP：在启动时，预先存储的Bean集合
         Object aimObject = PROVIDER_CLASS_MAP.get(rpcInvocation.getTargetServiceName());
         // 当前类的方法列表
@@ -47,7 +46,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         }
         // 设置返回结果
         rpcInvocation.setResponse(result);
-        RpcProtocol respRpcProtocol = new RpcProtocol(JSON.toJSONString(rpcInvocation).getBytes());
+        RpcProtocol respRpcProtocol = new RpcProtocol(SERVER_SERIALIZE_FACTORY.serialize(rpcInvocation));
         ctx.writeAndFlush(respRpcProtocol);
     }
 

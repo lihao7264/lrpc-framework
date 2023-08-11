@@ -31,7 +31,7 @@ public class RpcProtocol implements Serializable {
     private int contentLength;
 
     /**
-     * 内容
+     * 内容（数据包的字节数组）
      * RpcInvocation类的字节数组，在RpcInvocation中包含更多的调用信息（即RpcInvocation类）
      */
     private byte[] content;

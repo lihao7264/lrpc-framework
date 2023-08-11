@@ -2,11 +2,10 @@ package com.atlihao.lrpc.framework.core.common.config;
 
 import java.io.IOException;
 
-import static com.atlihao.lrpc.framework.core.common.constants.RpcConstants.JDK_PROXY_TYPE;
-import static com.atlihao.lrpc.framework.core.common.constants.RpcConstants.RANDOM_ROUTER_TYPE;
+import static com.atlihao.lrpc.framework.core.common.constants.RpcConstants.*;
 
 /**
- * @Description:
+ * @Description: 配置加载器
  * @Author: lihao726726
  * @CreateDate: 2023/8/9 3:44 下午
  * @UpdateUser: lihao726726
@@ -22,6 +21,8 @@ public class PropertiesBootstrap {
     public static final String APPLICATION_NAME = "lrpc.applicationName";
     public static final String PROXY_TYPE = "lrpc.proxyType";
     public static final String ROUTER_TYPE = "lrpc.routerStrategy";
+    public static final String SERVER_SERIALIZE_TYPE = "lrpc.serverSerialize";
+    public static final String CLIENT_SERIALIZE_TYPE = "lrpc.clientSerialize";
 
     /**
      * 加载服务端配置
@@ -38,6 +39,7 @@ public class PropertiesBootstrap {
         serverConfig.setServerPort(PropertiesLoader.getPropertiesInteger(SERVER_PORT));
         serverConfig.setApplicationName(PropertiesLoader.getPropertiesNotBlank(APPLICATION_NAME));
         serverConfig.setRegisterAddr(PropertiesLoader.getPropertiesNotBlank(REGISTER_ADDRESS));
+        serverConfig.setServerSerialize(PropertiesLoader.getPropertiesStrDefault(SERVER_SERIALIZE_TYPE, JDK_SERIALIZE_TYPE));
         return serverConfig;
     }
 
@@ -57,6 +59,7 @@ public class PropertiesBootstrap {
         clientConfig.setRegisterAddr(PropertiesLoader.getPropertiesNotBlank(REGISTER_ADDRESS));
         clientConfig.setProxyType(PropertiesLoader.getPropertiesStrDefault(PROXY_TYPE, JDK_PROXY_TYPE));
         clientConfig.setRouterStrategy(PropertiesLoader.getPropertiesStrDefault(ROUTER_TYPE, RANDOM_ROUTER_TYPE));
+        clientConfig.setClientSerialize(PropertiesLoader.getPropertiesStrDefault(SERVER_SERIALIZE_TYPE, JDK_SERIALIZE_TYPE));
         return clientConfig;
     }
 

@@ -31,6 +31,10 @@ public class NewRandomLRouterImpl implements LRouter {
         // 计算总的权重
         Integer totalWeight = calTotalWeights(channelFutureWrappers);
         SERVICE_ROUTER_TOTAL_WEIGHT_MAP.put(selector.getProviderServiceName(), totalWeight);
+        URL url = new URL();
+        url.setServiceName(selector.getProviderServiceName());
+        // 更新权重
+        LROUTER.updateWeight(url);
     }
 
     /**

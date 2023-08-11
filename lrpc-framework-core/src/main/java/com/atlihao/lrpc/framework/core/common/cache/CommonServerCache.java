@@ -2,6 +2,7 @@ package com.atlihao.lrpc.framework.core.common.cache;
 
 import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
+import com.atlihao.lrpc.framework.core.serialize.SerializeFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,5 +35,10 @@ public class CommonServerCache {
      * 注册服务
      */
     public static RegistryService REGISTRY_SERVICE;
+
+    /**
+     * 服务端序列化工厂
+     */
+    public static SerializeFactory SERVER_SERIALIZE_FACTORY;
 
 }

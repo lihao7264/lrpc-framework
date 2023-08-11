@@ -34,4 +34,9 @@ public class ProviderNodeInfo {
      * 注册时间
      */
     private String registryTime;
+
+    /**
+     * 分组
+     */
+    private String group;
 }

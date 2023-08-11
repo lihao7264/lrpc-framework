@@ -16,6 +16,10 @@ import com.atlihao.lrpc.framework.core.registry.zookeeper.AbstractRegister;
 import com.atlihao.lrpc.framework.core.registry.zookeeper.ZookeeperRegister;
 import com.atlihao.lrpc.framework.core.router.RandomLRouterImpl;
 import com.atlihao.lrpc.framework.core.router.RotateLRouterImpl;
+import com.atlihao.lrpc.framework.core.serialize.fastjson.FastJsonSerializeFactory;
+import com.atlihao.lrpc.framework.core.serialize.hessian.HessianSerializeFactory;
+import com.atlihao.lrpc.framework.core.serialize.jdk.JdkSerializeFactory;
+import com.atlihao.lrpc.framework.core.serialize.kryo.KryoSerializeFactory;
 import com.atlihao.lrpc.framework.interfaces.DataService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -151,9 +155,7 @@ public class Client {
                     // 阻塞模式
                     RpcInvocation data = SEND_QUEUE.take();
                     // 将RpcInvocation封装到RpcProtocol对象中，再发送给服务端，这里正好对应ServerHandler
-                    String json = JSON.toJSONString(data);
-                    // 发送请求
-                    RpcProtocol rpcProtocol = new RpcProtocol(json.getBytes());
+                    RpcProtocol rpcProtocol = new RpcProtocol(CLIENT_SERIALIZE_FACTORY.serialize(data));
                     ChannelFuture channelFuture = ConnectionHandler.getChannelFuture(data.getTargetServiceName());
                     // Netty的通道负责发送数据给服务端
                     channelFuture.channel().writeAndFlush(rpcProtocol);
@@ -170,10 +172,33 @@ public class Client {
     private void initClientConfig() {
         //初始化路由策略
         String routerStrategy = clientConfig.getRouterStrategy();
-        if (RANDOM_ROUTER_TYPE.equals(routerStrategy)) {
-            LROUTER = new RandomLRouterImpl();
-        } else if (ROTATE_ROUTER_TYPE.equals(routerStrategy)) {
-            LROUTER = new RotateLRouterImpl();
+        switch (routerStrategy) {
+            case RANDOM_ROUTER_TYPE:
+                LROUTER = new RandomLRouterImpl();
+                break;
+            case ROTATE_ROUTER_TYPE:
+                LROUTER = new RotateLRouterImpl();
+                break;
+            default:
+                throw new RuntimeException("no match routerStrategy for" + routerStrategy);
+        }
+
+        String clientSerialize = clientConfig.getClientSerialize();
+        switch (clientSerialize) {
+            case JDK_SERIALIZE_TYPE:
+                CLIENT_SERIALIZE_FACTORY = new JdkSerializeFactory();
+                break;
+            case FAST_JSON_SERIALIZE_TYPE:
+                CLIENT_SERIALIZE_FACTORY = new FastJsonSerializeFactory();
+                break;
+            case HESSIAN2_SERIALIZE_TYPE:
+                CLIENT_SERIALIZE_FACTORY = new HessianSerializeFactory();
+                break;
+            case KRYO_SERIALIZE_TYPE:
+                CLIENT_SERIALIZE_FACTORY = new KryoSerializeFactory();
+                break;
+            default:
+                throw new RuntimeException("no match serialize type for " + clientSerialize);
         }
     }
 
@@ -183,8 +208,12 @@ public class Client {
         RpcReference rpcReference = client.initClientApplication();
         // 初始化客户端配置
         client.initClientConfig();
+        RpcReferenceWrapper<DataService> rpcReferenceWrapper = new RpcReferenceWrapper<>();
+        rpcReferenceWrapper.setTargetClass(DataService.class);
+        rpcReferenceWrapper.setGroup("default");
+
         // 获取服务的代理对象
-        DataService dataService = rpcReference.get(DataService.class);
+        DataService dataService = rpcReference.get(rpcReferenceWrapper);
         // 订阅某个服务
         client.doSubscribeService(DataService.class);
         ConnectionHandler.setBootstrap(client.getBootstrap());

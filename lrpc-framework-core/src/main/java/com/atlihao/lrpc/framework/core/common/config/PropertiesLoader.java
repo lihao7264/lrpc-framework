@@ -66,7 +66,7 @@ public class PropertiesLoader {
             String value = properties.getProperty(key);
             propertiesMap.put(key, value);
         }
-        return String.valueOf(propertiesMap.get(key));
+        return propertiesMap.get(key) == null ? null : String.valueOf(propertiesMap.get(key));
     }
 
     public static String getPropertiesNotBlank(String key) {

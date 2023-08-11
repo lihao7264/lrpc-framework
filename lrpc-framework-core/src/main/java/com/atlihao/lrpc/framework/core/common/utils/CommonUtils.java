@@ -1,5 +1,7 @@
 package com.atlihao.lrpc.framework.core.common.utils;
 
+import com.atlihao.lrpc.framework.core.common.ChannelFutureWrapper;
+
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -49,7 +51,7 @@ public class CommonUtils {
                     Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
                     while (addresses.hasMoreElements()) {
                         ip = addresses.nextElement();
-                        if (ip != null && ip instanceof Inet4Address) {
+                        if (Objects.nonNull(ip) && ip instanceof Inet4Address) {
                             return ip.getHostAddress();
                         }
                     }
@@ -74,5 +76,13 @@ public class CommonUtils {
 
     public static boolean isNotEmptyList(List list) {
         return !isEmptyList(list);
+    }
+
+    public static ChannelFutureWrapper[] convertFromList(List<ChannelFutureWrapper> channelFutureWrappers) {
+        ChannelFutureWrapper[] channelFutureWrappersArr = new ChannelFutureWrapper[channelFutureWrappers.size()];
+        for (int i = 0; i < channelFutureWrappers.size(); i++) {
+            channelFutureWrappersArr[i] = channelFutureWrappers.get(i);
+        }
+        return channelFutureWrappersArr;
     }
 }

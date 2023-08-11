@@ -1,5 +1,6 @@
 package com.atlihao.lrpc.framework.core.router;
 
+import com.atlihao.lrpc.framework.core.common.ChannelFutureWrapper;
 import lombok.Data;
 
 /**
@@ -18,5 +19,10 @@ public class Selector {
      * 举例: com.atlihao.test.DataService
      */
     private String providerServiceName;
+
+    /**
+     * 经过二次筛选后的future集合
+     */
+    private ChannelFutureWrapper[] channelFutureWrappers;
 
 }

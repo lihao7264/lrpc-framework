@@ -3,6 +3,9 @@ package com.atlihao.lrpc.framework.core.common;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @Description:
  * @Author: lihao726726
@@ -48,4 +51,7 @@ public class RpcInvocation {
      * 响应：接口响应的数据塞入该字段中（如果是异步调用或者void类型，则为空）
      */
     private Object response;
+
+    private Map<String,Object> attachments = new HashMap<>();
+
 }

@@ -20,7 +20,7 @@ public class ProviderNodeDataChangeListener implements LRpcListener<LRpcNodeChan
         for (ChannelFutureWrapper channelFutureWrapper : channelFutureWrappers) {
             String address = channelFutureWrapper.getHost() + ":" + channelFutureWrapper.getPort();
             if (address.equals(providerNodeInfo.getAddress())) {
-                //修改权重
+                // 修改权重
                 channelFutureWrapper.setWeight(providerNodeInfo.getWeight());
                 URL url = new URL();
                 url.setServiceName(providerNodeInfo.getServiceName());

@@ -37,6 +37,10 @@ public class RandomLRouterImpl implements LRouter {
             arr[i] = channelFutureWrappers.get(result[i]);
         }
         SERVICE_ROUTER_MAP.put(selector.getProviderServiceName(), arr);
+        URL url = new URL();
+        url.setServiceName(selector.getProviderServiceName());
+        // 更新权重
+        LROUTER.updateWeight(url);
     }
 
     /**
@@ -47,7 +51,7 @@ public class RandomLRouterImpl implements LRouter {
      */
     @Override
     public ChannelFutureWrapper select(Selector selector) {
-        return CHANNEL_FUTURE_POLLING_REF.getChannelFutureWrapper(selector.getProviderServiceName());
+        return CHANNEL_FUTURE_POLLING_REF.getChannelFutureWrapper(selector.getChannelFutureWrappers());
     }
 
     /**
@@ -69,8 +73,6 @@ public class RandomLRouterImpl implements LRouter {
         }
         SERVICE_ROUTER_MAP.put(url.getServiceName(), finalChannelFutureWrappers);
     }
-
-    /*********************** 随机权重计算方式二：累加+随机方式 **************************/
 
     /*********************** 随机权重计算方式一：数组方式 **************************/
     private static Integer[] createWeightArr(List<ChannelFutureWrapper> channelFutureWrappers) {

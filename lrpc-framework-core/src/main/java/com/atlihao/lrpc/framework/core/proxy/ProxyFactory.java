@@ -1,5 +1,7 @@
 package com.atlihao.lrpc.framework.core.proxy;
 
+import com.atlihao.lrpc.framework.core.client.RpcReferenceWrapper;
+
 /**
  * @Description:
  * @Author: lihao726726
@@ -13,11 +15,11 @@ public interface ProxyFactory {
     /**
      * 获取代理实例
      *
-     * @param clazz
+     * @param rpcReferenceWrapper
      * @param <T>
      * @return
      * @throws Throwable
      */
-    <T> T getProxy(final Class clazz) throws Throwable;
+    <T> T getProxy(RpcReferenceWrapper rpcReferenceWrapper) throws Throwable;
 
 }

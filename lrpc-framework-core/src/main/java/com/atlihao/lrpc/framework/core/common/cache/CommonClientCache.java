@@ -6,6 +6,7 @@ import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 import com.atlihao.lrpc.framework.core.common.config.ClientConfig;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import com.atlihao.lrpc.framework.core.router.LRouter;
+import com.atlihao.lrpc.framework.core.serialize.SerializeFactory;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -31,11 +32,6 @@ public class CommonClientCache {
      * 响应结果
      */
     public static Map<String, Object> RESP_MAP = new ConcurrentHashMap<>();
-
-    /**
-     * 客户端配置
-     */
-    public static ClientConfig CLIENT_CONFIG;
 
     /**
      * provider名称 --> 该服务有哪些集群URL
@@ -69,6 +65,12 @@ public class CommonClientCache {
 
 
     public static LRouter LROUTER;
+
+    /**
+     * 客户端序列化工厂
+     */
+    public static SerializeFactory CLIENT_SERIALIZE_FACTORY;
+
 
     /*************** 随机策略方式二 ****************/
     public static Map<String, Integer> SERVICE_ROUTER_TOTAL_WEIGHT_MAP = new ConcurrentHashMap<>();

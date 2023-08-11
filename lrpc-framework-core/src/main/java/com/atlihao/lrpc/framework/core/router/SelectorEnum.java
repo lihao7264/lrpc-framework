@@ -12,7 +12,9 @@ import lombok.Data;
  */
 public enum SelectorEnum {
 
-    RANDOM_SELECTOR(0, "random");
+    RANDOM_SELECTOR(0, "random"),
+    ROTATE_SELECTOR(1, "rotate"),
+    ;
 
     int code;
     String desc;

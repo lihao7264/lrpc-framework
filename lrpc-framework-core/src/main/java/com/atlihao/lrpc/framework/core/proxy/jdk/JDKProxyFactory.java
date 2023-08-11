@@ -1,6 +1,7 @@
 package com.atlihao.lrpc.framework.core.proxy.jdk;
 
 
+import com.atlihao.lrpc.framework.core.client.RpcReferenceWrapper;
 import com.atlihao.lrpc.framework.core.proxy.ProxyFactory;
 
 import java.lang.reflect.Proxy;
@@ -17,9 +18,9 @@ import java.lang.reflect.Proxy;
 public class JDKProxyFactory implements ProxyFactory {
 
     @Override
-    public <T> T getProxy(final Class clazz) {
-        return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz},
-                new JDKClientInvocationHandler(clazz));
+    public <T> T getProxy(final RpcReferenceWrapper rpcReferenceWrapper) {
+        return (T) Proxy.newProxyInstance(rpcReferenceWrapper.getTargetClass().getClassLoader(), new Class[]{rpcReferenceWrapper.getTargetClass()},
+                new JDKClientInvocationHandler(rpcReferenceWrapper.getTargetClass()));
     }
 
 }

@@ -8,6 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 
+import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.CLIENT_SERIALIZE_FACTORY;
 import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.RESP_MAP;
 
 /**
@@ -26,8 +27,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         RpcProtocol rpcProtocol = (RpcProtocol) msg;
         // 这里是传输参数更为详细的RpcInvocation对象字节数组。
         byte[] reqContent = rpcProtocol.getContent();
-        String json = new String(reqContent, 0, reqContent.length);
-        RpcInvocation rpcInvocation = JSON.parseObject(json, RpcInvocation.class);
+        RpcInvocation rpcInvocation = CLIENT_SERIALIZE_FACTORY.deserialize(reqContent, RpcInvocation.class);
         // 通过之前发送的uuid来注入匹配的响应数值
         if (!RESP_MAP.containsKey(rpcInvocation.getUuid())) {
             throw new IllegalArgumentException("server response is error!");
@@ -42,7 +42,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         Channel channel = ctx.channel();
-        if(channel.isActive()){
+        if (channel.isActive()) {
             ctx.close();
         }
     }

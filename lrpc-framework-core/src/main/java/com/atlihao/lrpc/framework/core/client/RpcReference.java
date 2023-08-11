@@ -21,11 +21,11 @@ public class RpcReference {
     /**
      * 根据接口类型获取代理对象
      *
-     * @param tClass
+     * @param referenceWrapper
      * @param <T>
      * @return
      */
-    public <T> T get(Class<T> tClass) throws Throwable {
-        return proxyFactory.getProxy(tClass);
+    public <T> T get(RpcReferenceWrapper<T> referenceWrapper) throws Throwable {
+        return proxyFactory.getProxy(referenceWrapper);
     }
 }

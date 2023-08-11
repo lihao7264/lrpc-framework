@@ -1,5 +1,6 @@
 package com.atlihao.lrpc.framework.core.proxy.javassist;
 
+import com.atlihao.lrpc.framework.core.client.RpcReferenceWrapper;
 import com.atlihao.lrpc.framework.core.proxy.ProxyFactory;
 
 /**
@@ -14,12 +15,13 @@ public class JavassistProxyFactory implements ProxyFactory {
     /**
      * 获取代理实例
      *
-     * @param clazz
+     * @param rpcReferenceWrapper
      * @return
      * @throws Throwable
      */
     @Override
-    public <T> T getProxy(Class clazz) throws Throwable {
-        return (T) ProxyGenerator.newProxyInstance(Thread.currentThread().getContextClassLoader(), clazz, new JavassistInvocationHandler(clazz));
+    public <T> T getProxy(RpcReferenceWrapper rpcReferenceWrapper) throws Throwable {
+        return (T) ProxyGenerator.newProxyInstance(Thread.currentThread().getContextClassLoader(), rpcReferenceWrapper.getTargetClass(),
+                new JavassistInvocationHandler(rpcReferenceWrapper.getTargetClass()));
     }
 }

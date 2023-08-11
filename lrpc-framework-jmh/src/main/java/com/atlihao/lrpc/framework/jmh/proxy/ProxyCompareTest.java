@@ -3,6 +3,7 @@ package com.atlihao.lrpc.framework.jmh.proxy;
 import com.atlihao.lrpc.framework.core.client.Client;
 import com.atlihao.lrpc.framework.core.client.ConnectionHandler;
 import com.atlihao.lrpc.framework.core.client.RpcReference;
+import com.atlihao.lrpc.framework.core.client.RpcReferenceWrapper;
 import com.atlihao.lrpc.framework.interfaces.DataService;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.runner.Runner;
@@ -23,7 +24,10 @@ public class ProxyCompareTest {
         client = new Client();
         rpcReference = client.initClientApplication();
         try {
-            dataService = rpcReference.get(DataService.class);
+            RpcReferenceWrapper<DataService> rpcReferenceWrapper = new RpcReferenceWrapper<>();
+            rpcReferenceWrapper.setTargetClass(DataService.class);
+            rpcReferenceWrapper.setGroup("default");
+            dataService = rpcReference.get(rpcReferenceWrapper);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -47,11 +51,12 @@ public class ProxyCompareTest {
      * @return
      * @throws Throwable
      */
-    @Benchmark
-    public String testJavassistProxy() throws Throwable {
-        String content = dataService.sendData("test");
-        return content;
-    }
+//    @Benchmark
+//    public String testJavassistProxy() throws Throwable {
+//        String content = dataService.sendData("test");
+//        return content;
+//    }
+
     public static void main(String[] args) throws RunnerException {
         // 配置进行2轮热数 测试2轮 1个线程
         // 预热原因：JVM在代码执行多次会有优化

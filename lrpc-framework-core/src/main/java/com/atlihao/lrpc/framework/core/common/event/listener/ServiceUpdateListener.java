@@ -5,6 +5,7 @@ import com.atlihao.lrpc.framework.core.common.ChannelFutureWrapper;
 import com.atlihao.lrpc.framework.core.common.event.LRpcEvent;
 import com.atlihao.lrpc.framework.core.common.event.data.URLChangeWrapper;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
+import com.atlihao.lrpc.framework.core.router.Selector;
 import io.netty.channel.ChannelFuture;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.CONNECT_MAP;
+import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.LROUTER;
 
 /**
  * @Description:
@@ -71,6 +73,9 @@ public class ServiceUpdateListener implements LRpcListener<LRpcEvent> {
             finalChannelFutureWrappers.addAll(newChannelFutureWrapper);
             // 最终更新服务在这里
             CONNECT_MAP.put(urlChangeWrapper.getServiceName(), finalChannelFutureWrappers);
+            Selector selector = new Selector();
+            selector.setProviderServiceName(urlChangeWrapper.getServiceName());
+            LROUTER.refreshRouterArr(selector);
         }
     }
 

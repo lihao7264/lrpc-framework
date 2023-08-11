@@ -9,8 +9,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.PROVIDER_CLASS_MAP;
-import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.SERVER_SERIALIZE_FACTORY;
+import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.*;
 
 /**
  * @Description: 服务端接收数据后的处理器
@@ -27,6 +26,8 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         // 服务端接收数据时，统一以RpcProtocol协议的格式接收
         RpcProtocol rpcProtocol = (RpcProtocol) msg;
         RpcInvocation rpcInvocation = SERVER_SERIALIZE_FACTORY.deserialize(rpcProtocol.getContent(), RpcInvocation.class);
+        //执行过滤链路
+        SERVER_FILTER_CHAIN.doFilter(rpcInvocation);
         // PROVIDER_CLASS_MAP：在启动时，预先存储的Bean集合
         Object aimObject = PROVIDER_CLASS_MAP.get(rpcInvocation.getTargetServiceName());
         // 当前类的方法列表

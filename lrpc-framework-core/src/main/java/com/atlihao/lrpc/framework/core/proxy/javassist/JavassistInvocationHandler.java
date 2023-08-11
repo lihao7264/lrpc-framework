@@ -1,5 +1,6 @@
 package com.atlihao.lrpc.framework.core.proxy.javassist;
 
+import com.atlihao.lrpc.framework.core.client.RpcReferenceWrapper;
 import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 
 import java.lang.reflect.InvocationHandler;
@@ -22,10 +23,10 @@ public class JavassistInvocationHandler implements InvocationHandler {
 
     private final static Object OBJECT = new Object();
 
-    private Class<?> clazz;
+    private RpcReferenceWrapper rpcReferenceWrapper;
 
-    public JavassistInvocationHandler(Class<?> clazz) {
-        this.clazz = clazz;
+    public JavassistInvocationHandler(RpcReferenceWrapper rpcReferenceWrapper) {
+        this.rpcReferenceWrapper = rpcReferenceWrapper;
     }
 
 
@@ -35,7 +36,8 @@ public class JavassistInvocationHandler implements InvocationHandler {
         RpcInvocation rpcInvocation = new RpcInvocation();
         rpcInvocation.setArgs(args);
         rpcInvocation.setTargetMethod(method.getName());
-        rpcInvocation.setTargetServiceName(clazz.getName());
+        rpcInvocation.setTargetServiceName(rpcReferenceWrapper.getTargetClass().getName());
+        rpcInvocation.setAttachments(rpcReferenceWrapper.getAttatchments());
         rpcInvocation.setUuid(UUID.randomUUID().toString());
         // 响应结果
         RESP_MAP.put(rpcInvocation.getUuid(), OBJECT);

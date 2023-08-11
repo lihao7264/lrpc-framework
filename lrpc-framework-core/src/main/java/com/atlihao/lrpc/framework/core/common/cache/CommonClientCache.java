@@ -4,6 +4,7 @@ import com.atlihao.lrpc.framework.core.common.ChannelFuturePollingRef;
 import com.atlihao.lrpc.framework.core.common.ChannelFutureWrapper;
 import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 import com.atlihao.lrpc.framework.core.common.config.ClientConfig;
+import com.atlihao.lrpc.framework.core.filter.client.ClientFilterChain;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import com.atlihao.lrpc.framework.core.router.LRouter;
 import com.atlihao.lrpc.framework.core.serialize.SerializeFactory;
@@ -71,6 +72,15 @@ public class CommonClientCache {
      */
     public static SerializeFactory CLIENT_SERIALIZE_FACTORY;
 
+    /**
+     * 客户端配置
+     */
+    public static ClientConfig CLIENT_CONFIG;
+
+    /**
+     * 客户端filter链路
+     */
+    public static ClientFilterChain CLIENT_FILTER_CHAIN;
 
     /*************** 随机策略方式二 ****************/
     public static Map<String, Integer> SERVICE_ROUTER_TOTAL_WEIGHT_MAP = new ConcurrentHashMap<>();

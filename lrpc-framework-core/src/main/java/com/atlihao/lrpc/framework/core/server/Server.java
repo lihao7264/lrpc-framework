@@ -6,6 +6,9 @@ import com.atlihao.lrpc.framework.core.common.config.PropertiesBootstrap;
 import com.atlihao.lrpc.framework.core.common.config.ServerConfig;
 import com.atlihao.lrpc.framework.core.common.event.LRpcListenerLoader;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
+import com.atlihao.lrpc.framework.core.filter.server.ServerFilterChain;
+import com.atlihao.lrpc.framework.core.filter.server.ServerLogFilterImpl;
+import com.atlihao.lrpc.framework.core.filter.server.ServerTokenFilterImpl;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import com.atlihao.lrpc.framework.core.registry.zookeeper.ZookeeperRegister;
 import com.atlihao.lrpc.framework.core.serialize.fastjson.FastJsonSerializeFactory;
@@ -88,6 +91,11 @@ public class Server {
             default:
                 throw new RuntimeException("no match serialize type for" + serverSerialize);
         }
+        SERVER_CONFIG = serverConfig;
+        ServerFilterChain serverFilterChain = new ServerFilterChain();
+        serverFilterChain.addServerFilter(new ServerLogFilterImpl());
+        serverFilterChain.addServerFilter(new ServerTokenFilterImpl());
+        SERVER_FILTER_CHAIN = serverFilterChain;
         System.out.println("serverSerialize is " + serverSerialize);
     }
 
@@ -117,7 +125,11 @@ public class Server {
         url.addParameter("host", CommonUtils.getIpAddress());
         url.addParameter("port", String.valueOf(serverConfig.getServerPort()));
         url.addParameter("group", String.valueOf(serviceWrapper.getGroup()));
+        url.addParameter("limit", String.valueOf(serviceWrapper.getLimit()));
         PROVIDER_URL_SET.add(url);
+        if (CommonUtils.isNotEmpty(serviceWrapper.getServiceToken())) {
+            PROVIDER_SERVICE_WRAPPER_MAP.put(interfaceClass.getName(), serviceWrapper);
+        }
     }
 
     public void batchExportUrl() {
@@ -145,8 +157,14 @@ public class Server {
         lRpcListenerLoader = new LRpcListenerLoader();
         lRpcListenerLoader.init();
         // 暴露服务
-        server.exportService(new ServiceWrapper(new DataServiceImpl()));
-        server.exportService(new ServiceWrapper(new UserServiceImpl()));
+        ServiceWrapper dataServiceServiceWrapper = new ServiceWrapper(new DataServiceImpl(), "dev");
+        dataServiceServiceWrapper.setServiceToken("token-a");
+        dataServiceServiceWrapper.setLimit(2);
+        ServiceWrapper userServiceServiceWrapper = new ServiceWrapper(new UserServiceImpl(), "dev");
+        userServiceServiceWrapper.setServiceToken("token-b");
+        userServiceServiceWrapper.setLimit(2);
+        server.exportService(dataServiceServiceWrapper);
+        server.exportService(userServiceServiceWrapper);
         // 注册一个shutdownHook的钩子，当jvm进程关闭时触发
         ApplicationShutdownHook.registryShutdownHook();
         // 启动服务端

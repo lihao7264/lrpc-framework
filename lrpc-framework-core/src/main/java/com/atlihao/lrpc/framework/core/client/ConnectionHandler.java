@@ -1,6 +1,7 @@
 package com.atlihao.lrpc.framework.core.client;
 
 import com.atlihao.lrpc.framework.core.common.ChannelFutureWrapper;
+import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import com.atlihao.lrpc.framework.core.registry.zookeeper.ProviderNodeInfo;
@@ -9,6 +10,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -113,14 +115,17 @@ public class ConnectionHandler {
     /**
      * 默认走随机策略获取ChannelFuture
      *
-     * @param providerServiceName
+     * @param rpcInvocation
      * @return
      */
-    public static ChannelFuture getChannelFuture(String providerServiceName) {
+    public static ChannelFuture getChannelFuture(RpcInvocation rpcInvocation) {
+        String providerServiceName = rpcInvocation.getTargetServiceName();
         ChannelFutureWrapper[] channelFutureWrappers = SERVICE_ROUTER_MAP.get(providerServiceName);
         if (channelFutureWrappers == null || channelFutureWrappers.length == 0) {
             throw new RuntimeException("no provider exist for " + providerServiceName);
         }
+        // 走客户端的过滤器链
+        CLIENT_FILTER_CHAIN.doFilter(CommonUtils.convertToList(channelFutureWrappers), rpcInvocation);
         Selector selector = new Selector();
         selector.setProviderServiceName(providerServiceName);
         selector.setChannelFutureWrappers(channelFutureWrappers);

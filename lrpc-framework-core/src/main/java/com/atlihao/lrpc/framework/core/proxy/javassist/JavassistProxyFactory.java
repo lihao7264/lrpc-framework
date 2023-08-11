@@ -22,6 +22,6 @@ public class JavassistProxyFactory implements ProxyFactory {
     @Override
     public <T> T getProxy(RpcReferenceWrapper rpcReferenceWrapper) throws Throwable {
         return (T) ProxyGenerator.newProxyInstance(Thread.currentThread().getContextClassLoader(), rpcReferenceWrapper.getTargetClass(),
-                new JavassistInvocationHandler(rpcReferenceWrapper.getTargetClass()));
+                new JavassistInvocationHandler(rpcReferenceWrapper));
     }
 }

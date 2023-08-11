@@ -9,6 +9,10 @@ import com.atlihao.lrpc.framework.core.common.config.ClientConfig;
 import com.atlihao.lrpc.framework.core.common.config.PropertiesBootstrap;
 import com.atlihao.lrpc.framework.core.common.event.LRpcListenerLoader;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
+import com.atlihao.lrpc.framework.core.filter.client.ClientFilterChain;
+import com.atlihao.lrpc.framework.core.filter.client.ClientLogFilterImpl;
+import com.atlihao.lrpc.framework.core.filter.client.DirectInvokeFilterImpl;
+import com.atlihao.lrpc.framework.core.filter.client.GroupFilterImpl;
 import com.atlihao.lrpc.framework.core.proxy.javassist.JavassistProxyFactory;
 import com.atlihao.lrpc.framework.core.proxy.jdk.JDKProxyFactory;
 import com.atlihao.lrpc.framework.core.registry.URL;
@@ -78,6 +82,7 @@ public class Client {
         lRpcListenerLoader.init();
         // 加载客户端配置
         this.clientConfig = PropertiesBootstrap.loadClientConfigFromLocal();
+        CLIENT_CONFIG = this.clientConfig;
         // 枸酱代理类型
         RpcReference rpcReference;
         if (JAVASSIST_PROXY_TYPE.equals(clientConfig.getProxyType())) {
@@ -153,12 +158,14 @@ public class Client {
             while (true) {
                 try {
                     // 阻塞模式
-                    RpcInvocation data = SEND_QUEUE.take();
-                    // 将RpcInvocation封装到RpcProtocol对象中，再发送给服务端，这里正好对应ServerHandler
-                    RpcProtocol rpcProtocol = new RpcProtocol(CLIENT_SERIALIZE_FACTORY.serialize(data));
-                    ChannelFuture channelFuture = ConnectionHandler.getChannelFuture(data.getTargetServiceName());
-                    // Netty的通道负责发送数据给服务端
-                    channelFuture.channel().writeAndFlush(rpcProtocol);
+                    RpcInvocation rpcInvocation = SEND_QUEUE.take();
+                    ChannelFuture channelFuture = ConnectionHandler.getChannelFuture(rpcInvocation);
+                    if (channelFuture != null) {
+                        // 将RpcInvocation封装到RpcProtocol对象中，再发送给服务端，这里正好对应ServerHandler
+                        RpcProtocol rpcProtocol = new RpcProtocol(CLIENT_SERIALIZE_FACTORY.serialize(rpcInvocation));
+                        // Netty的通道负责发送数据给服务端
+                        channelFuture.channel().writeAndFlush(rpcProtocol);
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -200,6 +207,13 @@ public class Client {
             default:
                 throw new RuntimeException("no match serialize type for " + clientSerialize);
         }
+
+        // 初始化过滤链 指定过滤的顺序
+        ClientFilterChain clientFilterChain = new ClientFilterChain();
+        clientFilterChain.addClientFilter(new DirectInvokeFilterImpl());
+        clientFilterChain.addClientFilter(new GroupFilterImpl());
+        clientFilterChain.addClientFilter(new ClientLogFilterImpl());
+        CLIENT_FILTER_CHAIN = clientFilterChain;
     }
 
     public static void main(String[] args) throws Throwable {
@@ -210,7 +224,9 @@ public class Client {
         client.initClientConfig();
         RpcReferenceWrapper<DataService> rpcReferenceWrapper = new RpcReferenceWrapper<>();
         rpcReferenceWrapper.setTargetClass(DataService.class);
-        rpcReferenceWrapper.setGroup("default");
+        rpcReferenceWrapper.setGroup("dev");
+        rpcReferenceWrapper.setServiceToken("token-a");
+        //        rpcReferenceWrapper.setUrl("192.168.43.227:9093");
 
         // 获取服务的代理对象
         DataService dataService = rpcReference.get(rpcReferenceWrapper);

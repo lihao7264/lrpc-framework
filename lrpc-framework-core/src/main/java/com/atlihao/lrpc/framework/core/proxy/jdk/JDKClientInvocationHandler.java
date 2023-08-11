@@ -1,6 +1,7 @@
 package com.atlihao.lrpc.framework.core.proxy.jdk;
 
 
+import com.atlihao.lrpc.framework.core.client.RpcReferenceWrapper;
 import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 
 import java.lang.reflect.InvocationHandler;
@@ -23,10 +24,10 @@ public class JDKClientInvocationHandler implements InvocationHandler {
 
     private final static Object OBJECT = new Object();
 
-    private Class<?> clazz;
+    private RpcReferenceWrapper rpcReferenceWrapper;
 
-    public JDKClientInvocationHandler(Class<?> clazz) {
-        this.clazz = clazz;
+    public JDKClientInvocationHandler(RpcReferenceWrapper rpcReferenceWrapper) {
+        this.rpcReferenceWrapper = rpcReferenceWrapper;
     }
 
     @Override
@@ -35,9 +36,10 @@ public class JDKClientInvocationHandler implements InvocationHandler {
         RpcInvocation rpcInvocation = new RpcInvocation();
         rpcInvocation.setArgs(args);
         rpcInvocation.setTargetMethod(method.getName());
-        rpcInvocation.setTargetServiceName(clazz.getName());
+        rpcInvocation.setTargetServiceName(rpcReferenceWrapper.getTargetClass().getName());
         // 这里注入一个uuid，对每一次的请求都做单独区分
         rpcInvocation.setUuid(UUID.randomUUID().toString());
+        rpcInvocation.setAttachments(rpcReferenceWrapper.getAttatchments());
         // 响应结果
         RESP_MAP.put(rpcInvocation.getUuid(), OBJECT);
         // 请求队列集合：将请求的参数放入到发送队列中

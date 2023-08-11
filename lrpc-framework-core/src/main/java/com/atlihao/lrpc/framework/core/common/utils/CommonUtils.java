@@ -67,6 +67,10 @@ public class CommonUtils {
         return str == null || str.length() == 0;
     }
 
+    public static boolean isNotEmpty(String str) {
+        return !isEmpty(str);
+    }
+
     public static boolean isEmptyList(List list) {
         if (list == null || list.size() == 0) {
             return true;
@@ -84,5 +88,13 @@ public class CommonUtils {
             channelFutureWrappersArr[i] = channelFutureWrappers.get(i);
         }
         return channelFutureWrappersArr;
+    }
+
+    public static List<ChannelFutureWrapper> convertToList(ChannelFutureWrapper[] channelFutureWrappers) {
+        List<ChannelFutureWrapper> channelFutureWrapperList = new ArrayList<>();
+        for (int i = 0; i < channelFutureWrappers.length; i++) {
+            channelFutureWrapperList.add(channelFutureWrappers[i]);
+        }
+        return channelFutureWrapperList;
     }
 }

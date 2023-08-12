@@ -30,11 +30,11 @@ public class DirectInvokeFilterImpl implements LClientFilter {
         if (CommonUtils.isEmpty(url)) {
             return;
         }
-        Iterator<ChannelFutureWrapper> iterator = src.iterator();
-        while (iterator.hasNext()) {
-            ChannelFutureWrapper channelFutureWrapper = iterator.next();
+        Iterator<ChannelFutureWrapper> channelFutureWrapperIterator = src.iterator();
+        while (channelFutureWrapperIterator.hasNext()) {
+            ChannelFutureWrapper channelFutureWrapper = channelFutureWrapperIterator.next();
             if (!(channelFutureWrapper.getHost() + ":" + channelFutureWrapper.getPort()).equals(url)) {
-                iterator.remove();
+                channelFutureWrapperIterator.remove();
             }
         }
         if (CommonUtils.isEmptyList(src)) {

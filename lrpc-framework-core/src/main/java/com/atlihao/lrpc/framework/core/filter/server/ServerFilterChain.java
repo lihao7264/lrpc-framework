@@ -16,15 +16,15 @@ import java.util.List;
  */
 public class ServerFilterChain {
 
-    private static List<LServerFilter> iServerFilters = new ArrayList<>();
+    private static List<LServerFilter> lServerFilters = new ArrayList<>();
 
     public void addServerFilter(LServerFilter iServerFilter) {
-        iServerFilters.add(iServerFilter);
+        lServerFilters.add(iServerFilter);
     }
 
     public void doFilter(RpcInvocation rpcInvocation) {
-        for (LServerFilter iServerFilter : iServerFilters) {
-            iServerFilter.doFilter(rpcInvocation);
+        for (LServerFilter lServerFilter : lServerFilters) {
+            lServerFilter.doFilter(rpcInvocation);
         }
     }
 }

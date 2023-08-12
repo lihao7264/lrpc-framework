@@ -1,6 +1,5 @@
 package com.atlihao.lrpc.framework.core.client;
 
-import com.alibaba.fastjson.JSON;
 import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 import com.atlihao.lrpc.framework.core.common.RpcProtocol;
 import io.netty.channel.Channel;
@@ -28,6 +27,13 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         // 这里是传输参数更为详细的RpcInvocation对象字节数组。
         byte[] reqContent = rpcProtocol.getContent();
         RpcInvocation rpcInvocation = CLIENT_SERIALIZE_FACTORY.deserialize(reqContent, RpcInvocation.class);
+        // 如果是单纯异步模式的话，响应Map集合中不会存在映射值
+        Object async = rpcInvocation.getAttachments().get("async");
+        if (async != null && Boolean.valueOf(String.valueOf(async))) {
+            ReferenceCountUtil.release(msg);
+            return;
+        }
+
         // 通过之前发送的uuid来注入匹配的响应数值
         if (!RESP_MAP.containsKey(rpcInvocation.getUuid())) {
             throw new IllegalArgumentException("server response is error!");

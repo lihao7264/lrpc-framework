@@ -21,11 +21,11 @@ public class GroupFilterImpl implements LClientFilter {
     @Override
     public void doFilter(List<ChannelFutureWrapper> src, RpcInvocation rpcInvocation) {
         String group = String.valueOf(rpcInvocation.getAttachments().get("group"));
-        Iterator<ChannelFutureWrapper> iterator = src.iterator();
-        while (iterator.hasNext()) {
-            ChannelFutureWrapper channelFutureWrapper = iterator.next();
+        Iterator<ChannelFutureWrapper> channelFutureWrapperIterator = src.iterator();
+        while (channelFutureWrapperIterator.hasNext()) {
+            ChannelFutureWrapper channelFutureWrapper = channelFutureWrapperIterator.next();
             if (!channelFutureWrapper.getGroup().equals(group)) {
-                iterator.remove();
+                channelFutureWrapperIterator.remove();
             }
         }
         if (CommonUtils.isEmptyList(src)) {

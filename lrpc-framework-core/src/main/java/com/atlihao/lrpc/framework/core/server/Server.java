@@ -8,16 +8,12 @@ import com.atlihao.lrpc.framework.core.common.event.LRpcListenerLoader;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 import com.atlihao.lrpc.framework.core.filter.LServerFilter;
 import com.atlihao.lrpc.framework.core.filter.server.ServerFilterChain;
-import com.atlihao.lrpc.framework.core.filter.server.ServerLogFilterImpl;
-import com.atlihao.lrpc.framework.core.filter.server.ServerTokenFilterImpl;
 import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import com.atlihao.lrpc.framework.core.registry.zookeeper.ZookeeperRegister;
 import com.atlihao.lrpc.framework.core.serialize.SerializeFactory;
-import com.atlihao.lrpc.framework.core.serialize.fastjson.FastJsonSerializeFactory;
-import com.atlihao.lrpc.framework.core.serialize.hessian.HessianSerializeFactory;
-import com.atlihao.lrpc.framework.core.serialize.jdk.JdkSerializeFactory;
-import com.atlihao.lrpc.framework.core.serialize.kryo.KryoSerializeFactory;
+import com.atlihao.lrpc.framework.core.service.impl.DataServiceImpl;
+import com.atlihao.lrpc.framework.core.service.impl.UserServiceImpl;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -28,14 +24,10 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.Data;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.EXTENSION_LOADER;
 import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.*;
-import static com.atlihao.lrpc.framework.core.common.constants.RpcConstants.*;
-import static com.atlihao.lrpc.framework.core.spi.ExtensionLoader.EXTENSION_LOADER_CLASS_CACHE;
 
 /**
  * @Description:
@@ -78,6 +70,8 @@ public class Server {
             }
         });
         this.batchExportUrl();
+        // 开始准备接收请求的任务
+        SERVER_CHANNEL_DISPATCHER.startDataConsume();
         bootstrap.bind(serverConfig.getServerPort()).sync();
         IS_STARTED = true;
     }
@@ -93,6 +87,8 @@ public class Server {
         ServerConfig serverConfig = PropertiesBootstrap.loadServerConfigFromLocal();
         this.setServerConfig(serverConfig);
         SERVER_CONFIG = serverConfig;
+        // 初始化线程池和队列的配置
+        SERVER_CHANNEL_DISPATCHER.init(SERVER_CONFIG.getServerQueueSize(),SERVER_CONFIG.getServerBizThreadNums());
         SERVER_SERIALIZE_FACTORY = (SerializeFactory) EXTENSION_LOADER.loadExtensionInstance(SerializeFactory.class, serverConfig.getServerSerialize());
         // 过滤链技术初始化
         List<Object> result = EXTENSION_LOADER.loadAllExtensionInstance(LServerFilter.class);

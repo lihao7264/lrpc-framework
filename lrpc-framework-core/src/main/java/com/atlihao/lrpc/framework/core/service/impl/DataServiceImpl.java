@@ -1,4 +1,4 @@
-package com.atlihao.lrpc.framework.core.server;
+package com.atlihao.lrpc.framework.core.service.impl;
 
 import com.atlihao.lrpc.framework.interfaces.DataService;
 

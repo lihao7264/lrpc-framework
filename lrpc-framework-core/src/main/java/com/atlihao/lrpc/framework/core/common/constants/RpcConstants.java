@@ -33,4 +33,19 @@ public class RpcConstants {
 
     public static final String KRYO_SERIALIZE_TYPE = "kryo";
 
+    /**
+     * 默认请求超时时间
+     */
+    public static final Long DEFAULT_TIMEOUT = 3000L;
+
+    /**
+     * 默认线程数
+     */
+    public static final Integer DEFAULT_THREAD_NUMS = 256;
+
+    /**
+     * 默认队列大小
+     */
+    public static final Integer DEFAULT_QUEUE_SIZE = 512;
+
 }

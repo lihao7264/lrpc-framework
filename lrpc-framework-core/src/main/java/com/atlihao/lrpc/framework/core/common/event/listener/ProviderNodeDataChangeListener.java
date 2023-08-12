@@ -18,6 +18,7 @@ public class ProviderNodeDataChangeListener implements LRpcListener<LRpcNodeChan
         ProviderNodeInfo providerNodeInfo = ((ProviderNodeInfo) t);
         List<ChannelFutureWrapper> channelFutureWrappers = CONNECT_MAP.get(providerNodeInfo.getServiceName());
         for (ChannelFutureWrapper channelFutureWrapper : channelFutureWrappers) {
+            // 重置分组信息
             String address = channelFutureWrapper.getHost() + ":" + channelFutureWrapper.getPort();
             if (address.equals(providerNodeInfo.getAddress())) {
                 channelFutureWrapper.setGroup(providerNodeInfo.getGroup());

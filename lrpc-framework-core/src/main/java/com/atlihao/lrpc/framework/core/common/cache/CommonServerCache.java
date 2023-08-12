@@ -1,6 +1,7 @@
 package com.atlihao.lrpc.framework.core.common.cache;
 
 import com.atlihao.lrpc.framework.core.common.config.ServerConfig;
+import com.atlihao.lrpc.framework.core.dispatcher.ServerChannelDispatcher;
 import com.atlihao.lrpc.framework.core.filter.server.ServerFilterChain;
 import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
@@ -62,5 +63,10 @@ public class CommonServerCache {
      * 是否启动
      */
     public static Boolean IS_STARTED = false;
+
+    /**
+     * 服务端处理
+     */
+    public static ServerChannelDispatcher SERVER_CHANNEL_DISPATCHER = new ServerChannelDispatcher();
 
 }

@@ -53,4 +53,13 @@ public class RpcReferenceWrapper<T> {
     public void setGroup(String group) {
         attatchments.put("group", group);
     }
+
+    public Long getTimeout() {
+        return Long.valueOf(String.valueOf(attatchments.get("timeOut")));
+    }
+
+    public void setTimeOut(Long timeOut) {
+        attatchments.put("timeOut", timeOut);
+    }
+
 }

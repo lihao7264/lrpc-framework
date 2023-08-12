@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -32,7 +33,7 @@ public class PropertiesLoader {
     /**
      * 配置文件地址
      */
-    private static String DEFAULT_PROPERTIES_FILE = "/Users/admin/Desktop/学习/正在进行/源码/rpc/lrpc-framework/lrpc-framework-core/src/main/resources/lrpc.properties";
+    private static String DEFAULT_PROPERTIES_FILE = "lrpc.properties";
 
     /**
      * 加载配置文件
@@ -44,8 +45,7 @@ public class PropertiesLoader {
             return;
         }
         properties = new Properties();
-        FileInputStream in = null;
-        in = new FileInputStream(DEFAULT_PROPERTIES_FILE);
+        InputStream in = PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_FILE);
         properties.load(in);
     }
 

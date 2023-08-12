@@ -9,17 +9,22 @@ import com.atlihao.lrpc.framework.core.common.config.ClientConfig;
 import com.atlihao.lrpc.framework.core.common.config.PropertiesBootstrap;
 import com.atlihao.lrpc.framework.core.common.event.LRpcListenerLoader;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
+import com.atlihao.lrpc.framework.core.filter.LClientFilter;
 import com.atlihao.lrpc.framework.core.filter.client.ClientFilterChain;
 import com.atlihao.lrpc.framework.core.filter.client.ClientLogFilterImpl;
 import com.atlihao.lrpc.framework.core.filter.client.DirectInvokeFilterImpl;
 import com.atlihao.lrpc.framework.core.filter.client.GroupFilterImpl;
+import com.atlihao.lrpc.framework.core.proxy.ProxyFactory;
 import com.atlihao.lrpc.framework.core.proxy.javassist.JavassistProxyFactory;
 import com.atlihao.lrpc.framework.core.proxy.jdk.JDKProxyFactory;
+import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import com.atlihao.lrpc.framework.core.registry.zookeeper.AbstractRegister;
 import com.atlihao.lrpc.framework.core.registry.zookeeper.ZookeeperRegister;
+import com.atlihao.lrpc.framework.core.router.LRouter;
 import com.atlihao.lrpc.framework.core.router.RandomLRouterImpl;
 import com.atlihao.lrpc.framework.core.router.RotateLRouterImpl;
+import com.atlihao.lrpc.framework.core.serialize.SerializeFactory;
 import com.atlihao.lrpc.framework.core.serialize.fastjson.FastJsonSerializeFactory;
 import com.atlihao.lrpc.framework.core.serialize.hessian.HessianSerializeFactory;
 import com.atlihao.lrpc.framework.core.serialize.jdk.JdkSerializeFactory;
@@ -35,11 +40,14 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.*;
 import static com.atlihao.lrpc.framework.core.common.constants.RpcConstants.*;
+import static com.atlihao.lrpc.framework.core.spi.ExtensionLoader.EXTENSION_LOADER_CLASS_CACHE;
 
 /**
  * @Description:
@@ -57,14 +65,12 @@ public class Client {
 
     private ClientConfig clientConfig;
 
-    private AbstractRegister abstractRegister;
-
     private LRpcListenerLoader lRpcListenerLoader;
 
     private Bootstrap bootstrap = new Bootstrap();
 
 
-    public RpcReference initClientApplication() {
+    public RpcReference initClientApplication() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
         EventLoopGroup clientGroup = new NioEventLoopGroup();
         bootstrap.group(clientGroup);
         bootstrap.channel(NioSocketChannel.class);
@@ -83,14 +89,11 @@ public class Client {
         // 加载客户端配置
         this.clientConfig = PropertiesBootstrap.loadClientConfigFromLocal();
         CLIENT_CONFIG = this.clientConfig;
-        // 枸酱代理类型
-        RpcReference rpcReference;
-        if (JAVASSIST_PROXY_TYPE.equals(clientConfig.getProxyType())) {
-            rpcReference = new RpcReference(new JavassistProxyFactory());
-        } else {
-            rpcReference = new RpcReference(new JDKProxyFactory());
-        }
-        return rpcReference;
+        // spi扩展的加载部分
+        this.initClientConfig();
+        // 构建代理类型
+        ProxyFactory proxyFactory = (ProxyFactory) EXTENSION_LOADER.loadExtensionInstance(ProxyFactory.class, clientConfig.getProxyType());
+        return new RpcReference(proxyFactory);
     }
 
 
@@ -100,26 +103,31 @@ public class Client {
      * @param serviceBean
      */
     public void doSubscribeService(Class serviceBean) {
-        if (abstractRegister == null) {
-            abstractRegister = new ZookeeperRegister(clientConfig.getRegisterAddr());
+        if (ABSTRACT_REGISTER == null) {
+            try {
+                ABSTRACT_REGISTER = (AbstractRegister) EXTENSION_LOADER.loadExtensionInstance(RegistryService.class,
+                        clientConfig.getRegisterType());
+            } catch (Exception e) {
+                throw new RuntimeException("registryServiceType unKnow,error is ", e);
+            }
         }
         URL url = new URL();
         url.setApplicationName(clientConfig.getApplicationName());
         url.setServiceName(serviceBean.getName());
         url.addParameter("host", CommonUtils.getIpAddress());
-        Map<String, String> result = abstractRegister.getServiceWeightMap(serviceBean.getName());
+        Map<String, String> result = ABSTRACT_REGISTER.getServiceWeightMap(serviceBean.getName());
         // 连接map
         URL_MAP.put(serviceBean.getName(), result);
-        abstractRegister.subscribe(url);
+        ABSTRACT_REGISTER.subscribe(url);
     }
 
 
     /**
-     * 开始和各个provider建立连接
+     * 开始和各个provider建立连接 并 监听各个providerNode节点的变化（child变化和nodeData的变化）
      */
     public void doConnectServer() {
         for (URL providerURL : SUBSCRIBE_SERVICE_LIST) {
-            List<String> providerIps = abstractRegister.getProviderIps(providerURL.getServiceName());
+            List<String> providerIps = ABSTRACT_REGISTER.getProviderIps(providerURL.getServiceName());
             for (String providerIp : providerIps) {
                 try {
                     ConnectionHandler.connect(providerURL.getServiceName(), providerIp);
@@ -131,7 +139,7 @@ public class Client {
             url.addParameter("servicePath", providerURL.getServiceName() + "/provider");
             url.addParameter("providerIps", JSON.toJSONString(providerIps));
             // 添加监听
-            abstractRegister.doAfterSubscribe(url);
+            ABSTRACT_REGISTER.doAfterSubscribe(url);
         }
     }
 
@@ -174,45 +182,24 @@ public class Client {
     }
 
     /**
-     *
+     * spi扩展的加载部分
      */
-    private void initClientConfig() {
-        //初始化路由策略
-        String routerStrategy = clientConfig.getRouterStrategy();
-        switch (routerStrategy) {
-            case RANDOM_ROUTER_TYPE:
-                LROUTER = new RandomLRouterImpl();
-                break;
-            case ROTATE_ROUTER_TYPE:
-                LROUTER = new RotateLRouterImpl();
-                break;
-            default:
-                throw new RuntimeException("no match routerStrategy for" + routerStrategy);
-        }
-
-        String clientSerialize = clientConfig.getClientSerialize();
-        switch (clientSerialize) {
-            case JDK_SERIALIZE_TYPE:
-                CLIENT_SERIALIZE_FACTORY = new JdkSerializeFactory();
-                break;
-            case FAST_JSON_SERIALIZE_TYPE:
-                CLIENT_SERIALIZE_FACTORY = new FastJsonSerializeFactory();
-                break;
-            case HESSIAN2_SERIALIZE_TYPE:
-                CLIENT_SERIALIZE_FACTORY = new HessianSerializeFactory();
-                break;
-            case KRYO_SERIALIZE_TYPE:
-                CLIENT_SERIALIZE_FACTORY = new KryoSerializeFactory();
-                break;
-            default:
-                throw new RuntimeException("no match serialize type for " + clientSerialize);
-        }
-
+    private void initClientConfig() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        // 初始化路由策略
+        LROUTER = (LRouter) EXTENSION_LOADER.loadExtensionInstance(LRouter.class, clientConfig.getRouterStrategy());
+        // 初始化序列化框架
+        CLIENT_SERIALIZE_FACTORY = (SerializeFactory) EXTENSION_LOADER.loadExtensionInstance(SerializeFactory.class, clientConfig.getClientSerialize());
         // 初始化过滤链 指定过滤的顺序
+        EXTENSION_LOADER.loadExtension(LClientFilter.class);
         ClientFilterChain clientFilterChain = new ClientFilterChain();
-        clientFilterChain.addClientFilter(new DirectInvokeFilterImpl());
-        clientFilterChain.addClientFilter(new GroupFilterImpl());
-        clientFilterChain.addClientFilter(new ClientLogFilterImpl());
+        LinkedHashMap<String, Class> iClientMap = EXTENSION_LOADER_CLASS_CACHE.get(LClientFilter.class.getName());
+        for (String implClassName : iClientMap.keySet()) {
+            Class iClientFilterClass = iClientMap.get(implClassName);
+            if (iClientFilterClass == null) {
+                throw new RuntimeException("no match iClientFilter for " + iClientFilterClass);
+            }
+            clientFilterChain.addClientFilter((LClientFilter) iClientFilterClass.newInstance());
+        }
         CLIENT_FILTER_CHAIN = clientFilterChain;
     }
 

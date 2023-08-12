@@ -11,6 +11,8 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.io.IOException;
+
 /**
  * JDK代理 和 Javassist代理性能比较
  */
@@ -22,7 +24,11 @@ public class ProxyCompareTest {
 
     static {
         client = new Client();
-        rpcReference = client.initClientApplication();
+        try {
+            rpcReference = client.initClientApplication();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         try {
             RpcReferenceWrapper<DataService> rpcReferenceWrapper = new RpcReferenceWrapper<>();
             rpcReferenceWrapper.setTargetClass(DataService.class);

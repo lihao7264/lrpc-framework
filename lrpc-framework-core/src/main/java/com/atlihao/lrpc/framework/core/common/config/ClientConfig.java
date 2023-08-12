@@ -26,6 +26,11 @@ public class ClientConfig {
     private String registerAddr;
 
     /**
+     * 注册中心类型
+     */
+    private String registerType;
+
+    /**
      * 代理类型
      * 举例：jdk、javassist
      */

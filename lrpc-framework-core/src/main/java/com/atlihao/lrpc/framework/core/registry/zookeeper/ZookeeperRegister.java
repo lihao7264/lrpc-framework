@@ -6,6 +6,7 @@ import com.atlihao.lrpc.framework.core.common.event.LRpcListenerLoader;
 import com.atlihao.lrpc.framework.core.common.event.LRpcNodeChangeEvent;
 import com.atlihao.lrpc.framework.core.common.event.LRpcUpdateEvent;
 import com.atlihao.lrpc.framework.core.common.event.data.URLChangeWrapper;
+import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import lombok.Data;
@@ -15,6 +16,10 @@ import org.apache.zookeeper.Watcher;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.CLIENT_CONFIG;
+import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.IS_STARTED;
+import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.SERVER_CONFIG;
 
 /**
  * @Description:
@@ -37,6 +42,11 @@ public class ZookeeperRegister extends AbstractRegister implements RegistryServi
 
     private String getConsumerPath(URL url) {
         return ROOT + "/" + url.getServiceName() + "/consumer/" + url.getApplicationName() + ":" + url.getParameters().get("host") + ":";
+    }
+
+    public ZookeeperRegister() {
+        String registryAddr = CLIENT_CONFIG != null ? CLIENT_CONFIG.getRegisterAddr() : SERVER_CONFIG.getRegisterAddr();
+        this.zkClient = new CuratorZookeeperClient(registryAddr);
     }
 
     public ZookeeperRegister(String address) {
@@ -78,6 +88,9 @@ public class ZookeeperRegister extends AbstractRegister implements RegistryServi
 
     @Override
     public void unRegister(URL url) {
+        if (!IS_STARTED) {
+            return;
+        }
         zkClient.deleteNode(getProviderPath(url));
         super.unRegister(url);
     }
@@ -102,12 +115,12 @@ public class ZookeeperRegister extends AbstractRegister implements RegistryServi
         // 监听是否有新的服务注册
         String servicePath = url.getParameters().get("servicePath");
         String newServerNodePath = ROOT + "/" + servicePath;
-        // 监听子节点
+        // 订阅节点地址：/lrpc/com.atlihao.lrpc.UserService/provider
         watchChildNodeData(newServerNodePath);
         String providerIpStrJson = url.getParameters().get("providerIps");
         List<String> providerIpList = JSON.parseObject(providerIpStrJson, List.class);
         for (String providerIp : providerIpList) {
-            // 监听节点数据
+            // 启动环节会触发订阅订阅节点详情地址：/lrpc/com.atlihao.lrpc.UserService/provider/192.11.11.101:9090
             this.watchNodeDataChange(ROOT + "/" + servicePath + "/" + providerIp);
         }
     }
@@ -124,8 +137,8 @@ public class ZookeeperRegister extends AbstractRegister implements RegistryServi
             @Override
             public void process(WatchedEvent watchedEvent) {
                 String path = watchedEvent.getPath();
+                System.out.println("[watchNodeDataChange] 监听到zk节点下的" + path + "节点数据发生变更");
                 String nodeData = zkClient.getNodeData(path);
-                nodeData = nodeData.replace(";", "/");
                 ProviderNodeInfo providerNodeInfo = URL.buildURLFromUrlStr(nodeData);
                 LRpcEvent iRpcEvent = new LRpcNodeChangeEvent(providerNodeInfo);
                 LRpcListenerLoader.sendEvent(iRpcEvent);
@@ -143,16 +156,29 @@ public class ZookeeperRegister extends AbstractRegister implements RegistryServi
         zkClient.watchChildNodeData(newServerNodePath, new Watcher() {
             @Override
             public void process(WatchedEvent watchedEvent) {
-                System.out.println(watchedEvent);
-                String path = watchedEvent.getPath();
-                List<String> childrenDataList = zkClient.getChildrenData(path);
+                String servicePath = watchedEvent.getPath();
+                System.out.println("收到子节点" + servicePath + "数据变化");
+                List<String> childrenDataList = zkClient.getChildrenData(servicePath);
+                if (CommonUtils.isEmptyList(childrenDataList)) {
+                    watchChildNodeData(servicePath);
+                    return;
+                }
                 URLChangeWrapper urlChangeWrapper = new URLChangeWrapper();
+                Map<String, String> nodeDetailInfoMap = new HashMap<>();
+                for (String providerAddress : childrenDataList) {
+                    String nodeDetailInfo = zkClient.getNodeData(servicePath + "/" + providerAddress);
+                    nodeDetailInfoMap.put(providerAddress, nodeDetailInfo);
+                }
+                urlChangeWrapper.setNodeDataUrl(nodeDetailInfoMap);
                 urlChangeWrapper.setProviderUrl(childrenDataList);
-                urlChangeWrapper.setServiceName(path.split("/")[2]);
+                urlChangeWrapper.setServiceName(servicePath.split("/")[2]);
                 LRpcEvent lRpcEvent = new LRpcUpdateEvent(urlChangeWrapper);
                 LRpcListenerLoader.sendEvent(lRpcEvent);
                 // 收到回调后在注册一次监听，这样能保证一直都收到消息
-                watchChildNodeData(path);
+                watchChildNodeData(servicePath);
+                for (String providerAddress : childrenDataList) {
+                    watchNodeDataChange(servicePath + "/" + providerAddress);
+                }
             }
         });
     }

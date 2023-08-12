@@ -1,0 +1,2 @@
+jdk=com.atlihao.lrpc.framework.core.proxy.jdk.JDKProxyFactory
+javassist=com.atlihao.lrpc.framework.core.proxy.javassist.JavassistProxyFactory

@@ -26,6 +26,11 @@ public class ServerConfig {
     private String registerAddr;
 
     /**
+     * 注册中心类型
+     */
+    private String registerType;
+
+    /**
      * 应用名
      */
     private String applicationName;

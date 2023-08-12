@@ -58,4 +58,9 @@ public class CommonServerCache {
 
     public static final Map<String, ServiceWrapper> PROVIDER_SERVICE_WRAPPER_MAP = new ConcurrentHashMap<>();
 
+    /**
+     * 是否启动
+     */
+    public static Boolean IS_STARTED = false;
+
 }

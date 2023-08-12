@@ -1,0 +1,2 @@
+serverLogFilterImpl=com.atlihao.lrpc.framework.core.filter.server.ServerLogFilterImpl
+serverTokenFilterImpl=com.atlihao.lrpc.framework.core.filter.server.ServerTokenFilterImpl

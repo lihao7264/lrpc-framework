@@ -1,0 +1,1 @@
+logFilterImpl=com.atlihao.lrpc.framework.consumer.spi.filter.LogFilterImpl

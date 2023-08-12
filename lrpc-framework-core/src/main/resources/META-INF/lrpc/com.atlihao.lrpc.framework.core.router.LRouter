@@ -1,0 +1,3 @@
+rotate=com.atlihao.lrpc.framework.core.router.RotateLRouterImpl
+random=com.atlihao.lrpc.framework.core.router.RandomLRouterImpl
+newRandom=com.atlihao.lrpc.framework.core.router.NewRandomLRouterImpl

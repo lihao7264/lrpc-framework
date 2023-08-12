@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description:
@@ -26,4 +27,9 @@ public class URLChangeWrapper {
      * 提供者url
      */
     private List<String> providerUrl;
+
+    /**
+     * 记录每个ip下的url详细信息（权重，分组等）
+     */
+    private Map<String,String> nodeDataUrl;
 }

@@ -81,6 +81,7 @@ public class URL {
     public static ProviderNodeInfo buildURLFromUrlStr(String providerNodeStr) {
         String[] items = providerNodeStr.split(";");
         ProviderNodeInfo providerNodeInfo = new ProviderNodeInfo();
+        providerNodeInfo.setApplicationName(items[0]);
         providerNodeInfo.setServiceName(items[1]);
         providerNodeInfo.setAddress(items[2]);
         providerNodeInfo.setRegistryTime(items[3]);

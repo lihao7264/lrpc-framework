@@ -6,8 +6,10 @@ import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 import com.atlihao.lrpc.framework.core.common.config.ClientConfig;
 import com.atlihao.lrpc.framework.core.filter.client.ClientFilterChain;
 import com.atlihao.lrpc.framework.core.registry.URL;
+import com.atlihao.lrpc.framework.core.registry.zookeeper.AbstractRegister;
 import com.atlihao.lrpc.framework.core.router.LRouter;
 import com.atlihao.lrpc.framework.core.serialize.SerializeFactory;
+import com.atlihao.lrpc.framework.core.spi.ExtensionLoader;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -81,6 +83,17 @@ public class CommonClientCache {
      * 客户端filter链路
      */
     public static ClientFilterChain CLIENT_FILTER_CHAIN;
+
+    /**
+     * 抽象注册中心
+     */
+    public static AbstractRegister ABSTRACT_REGISTER;
+
+    /**
+     * spi
+     */
+    public static ExtensionLoader EXTENSION_LOADER = new ExtensionLoader();
+
 
     /*************** 随机策略方式二 ****************/
     public static Map<String, Integer> SERVICE_ROUTER_TOTAL_WEIGHT_MAP = new ConcurrentHashMap<>();

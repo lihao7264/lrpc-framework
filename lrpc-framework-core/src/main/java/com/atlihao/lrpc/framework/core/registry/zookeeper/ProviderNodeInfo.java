@@ -16,6 +16,11 @@ import lombok.ToString;
 public class ProviderNodeInfo {
 
     /**
+     * 应用名
+     */
+    private String applicationName;
+
+    /**
      * 服务名
      */
     private String serviceName;

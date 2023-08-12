@@ -18,6 +18,7 @@ public class PropertiesBootstrap {
 
     public static final String SERVER_PORT = "lrpc.serverPort";
     public static final String REGISTER_ADDRESS = "lrpc.registerAddr";
+    public static final String REGISTER_TYPE = "lrpc.registerType";
     public static final String APPLICATION_NAME = "lrpc.applicationName";
     public static final String PROXY_TYPE = "lrpc.proxyType";
     public static final String ROUTER_TYPE = "lrpc.routerStrategy";
@@ -39,6 +40,7 @@ public class PropertiesBootstrap {
         serverConfig.setServerPort(PropertiesLoader.getPropertiesInteger(SERVER_PORT));
         serverConfig.setApplicationName(PropertiesLoader.getPropertiesNotBlank(APPLICATION_NAME));
         serverConfig.setRegisterAddr(PropertiesLoader.getPropertiesNotBlank(REGISTER_ADDRESS));
+        serverConfig.setRegisterType(PropertiesLoader.getPropertiesNotBlank(REGISTER_TYPE));
         serverConfig.setServerSerialize(PropertiesLoader.getPropertiesStrDefault(SERVER_SERIALIZE_TYPE, JDK_SERIALIZE_TYPE));
         return serverConfig;
     }
@@ -57,9 +59,10 @@ public class PropertiesBootstrap {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.setApplicationName(PropertiesLoader.getPropertiesNotBlank(APPLICATION_NAME));
         clientConfig.setRegisterAddr(PropertiesLoader.getPropertiesNotBlank(REGISTER_ADDRESS));
+        clientConfig.setRegisterType(PropertiesLoader.getPropertiesNotBlank(REGISTER_TYPE));
         clientConfig.setProxyType(PropertiesLoader.getPropertiesStrDefault(PROXY_TYPE, JDK_PROXY_TYPE));
         clientConfig.setRouterStrategy(PropertiesLoader.getPropertiesStrDefault(ROUTER_TYPE, RANDOM_ROUTER_TYPE));
-        clientConfig.setClientSerialize(PropertiesLoader.getPropertiesStrDefault(SERVER_SERIALIZE_TYPE, JDK_SERIALIZE_TYPE));
+        clientConfig.setClientSerialize(PropertiesLoader.getPropertiesStrDefault(CLIENT_SERIALIZE_TYPE, JDK_SERIALIZE_TYPE));
         return clientConfig;
     }
 

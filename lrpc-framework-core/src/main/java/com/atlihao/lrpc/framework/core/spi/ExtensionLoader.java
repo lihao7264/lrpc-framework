@@ -1,14 +1,14 @@
 package com.atlihao.lrpc.framework.core.spi;
 
+import com.atlihao.lrpc.framework.core.filter.LServerFilter;
+import com.atlihao.lrpc.framework.core.filter.server.ServerFilterChain;
 import com.atlihao.lrpc.framework.core.router.LRouter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.EXTENSION_LOADER;
@@ -31,6 +31,9 @@ public class ExtensionLoader {
     public void loadExtension(Class clazz) throws IOException, ClassNotFoundException {
         if (clazz == null) {
             throw new IllegalArgumentException("class is null!");
+        }
+        if (EXTENSION_LOADER_CLASS_CACHE.containsKey(clazz.getName())) {
+            return;
         }
         String spiFilePath = EXTENSION_LOADER_DIR_PREFIX + clazz.getName();
         ClassLoader classLoader = this.getClass().getClassLoader();
@@ -71,5 +74,19 @@ public class ExtensionLoader {
             throw new RuntimeException("no match code for " + targetCode);
         }
         return targetClass.newInstance();
+    }
+
+    public List<Object> loadAllExtensionInstance(Class clazz) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        EXTENSION_LOADER.loadExtension(clazz);
+        LinkedHashMap<String, Class> extClassMap = EXTENSION_LOADER_CLASS_CACHE.get(clazz.getName());
+        List<Object> result = new ArrayList<>();
+        for (String key : extClassMap.keySet()) {
+            Class extClass = extClassMap.get(key);
+            if (extClass == null) {
+                throw new RuntimeException("no match key type for " + key);
+            }
+            result.add(extClass.newInstance());
+        }
+        return result;
     }
 }

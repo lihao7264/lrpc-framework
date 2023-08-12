@@ -10,10 +10,12 @@ import com.atlihao.lrpc.framework.core.common.config.PropertiesBootstrap;
 import com.atlihao.lrpc.framework.core.common.event.LRpcListenerLoader;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 import com.atlihao.lrpc.framework.core.filter.LClientFilter;
+import com.atlihao.lrpc.framework.core.filter.LServerFilter;
 import com.atlihao.lrpc.framework.core.filter.client.ClientFilterChain;
 import com.atlihao.lrpc.framework.core.filter.client.ClientLogFilterImpl;
 import com.atlihao.lrpc.framework.core.filter.client.DirectInvokeFilterImpl;
 import com.atlihao.lrpc.framework.core.filter.client.GroupFilterImpl;
+import com.atlihao.lrpc.framework.core.filter.server.ServerFilterChain;
 import com.atlihao.lrpc.framework.core.proxy.ProxyFactory;
 import com.atlihao.lrpc.framework.core.proxy.javassist.JavassistProxyFactory;
 import com.atlihao.lrpc.framework.core.proxy.jdk.JDKProxyFactory;
@@ -182,7 +184,11 @@ public class Client {
     }
 
     /**
-     * spi扩展的加载部分
+     * spi扩展的加载部分:客户端初始化环节的加载策略
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
      */
     private void initClientConfig() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         // 初始化路由策略
@@ -190,15 +196,10 @@ public class Client {
         // 初始化序列化框架
         CLIENT_SERIALIZE_FACTORY = (SerializeFactory) EXTENSION_LOADER.loadExtensionInstance(SerializeFactory.class, clientConfig.getClientSerialize());
         // 初始化过滤链 指定过滤的顺序
-        EXTENSION_LOADER.loadExtension(LClientFilter.class);
+        List<Object> result = EXTENSION_LOADER.loadAllExtensionInstance(LClientFilter.class);
         ClientFilterChain clientFilterChain = new ClientFilterChain();
-        LinkedHashMap<String, Class> iClientMap = EXTENSION_LOADER_CLASS_CACHE.get(LClientFilter.class.getName());
-        for (String implClassName : iClientMap.keySet()) {
-            Class iClientFilterClass = iClientMap.get(implClassName);
-            if (iClientFilterClass == null) {
-                throw new RuntimeException("no match iClientFilter for " + iClientFilterClass);
-            }
-            clientFilterChain.addClientFilter((LClientFilter) iClientFilterClass.newInstance());
+        for (Object instance : result) {
+            clientFilterChain.addClientFilter((LClientFilter) instance);
         }
         CLIENT_FILTER_CHAIN = clientFilterChain;
     }

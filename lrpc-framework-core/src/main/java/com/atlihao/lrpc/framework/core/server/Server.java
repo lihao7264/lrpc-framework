@@ -29,6 +29,7 @@ import lombok.Data;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.EXTENSION_LOADER;
@@ -81,21 +82,23 @@ public class Server {
         IS_STARTED = true;
     }
 
+    /**
+     * 服务端初始化环节的加载策略
+     * @throws ClassNotFoundException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws IOException
+     */
     public void initServerConfig() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
         ServerConfig serverConfig = PropertiesBootstrap.loadServerConfigFromLocal();
         this.setServerConfig(serverConfig);
         SERVER_CONFIG = serverConfig;
         SERVER_SERIALIZE_FACTORY = (SerializeFactory) EXTENSION_LOADER.loadExtensionInstance(SerializeFactory.class, serverConfig.getServerSerialize());
         // 过滤链技术初始化
-        EXTENSION_LOADER.loadExtension(LServerFilter.class);
-        LinkedHashMap<String, Class> iServerFilterClassMap = EXTENSION_LOADER_CLASS_CACHE.get(LServerFilter.class.getName());
+        List<Object> result = EXTENSION_LOADER.loadAllExtensionInstance(LServerFilter.class);
         ServerFilterChain serverFilterChain = new ServerFilterChain();
-        for (String iServerFilterKey : iServerFilterClassMap.keySet()) {
-            Class iServerFilterClass = iServerFilterClassMap.get(iServerFilterKey);
-            if (iServerFilterClass == null) {
-                throw new RuntimeException("no match iServerFilter type for " + iServerFilterKey);
-            }
-            serverFilterChain.addServerFilter((LServerFilter) iServerFilterClass.newInstance());
+        for (Object instance : result) {
+            serverFilterChain.addServerFilter((LServerFilter) instance);
         }
         SERVER_FILTER_CHAIN = serverFilterChain;
     }

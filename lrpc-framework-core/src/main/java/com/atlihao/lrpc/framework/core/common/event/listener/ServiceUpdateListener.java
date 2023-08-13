@@ -40,7 +40,7 @@ public class ServiceUpdateListener implements LRpcListener<LRpcEvent> {
         List<ChannelFutureWrapper> finalChannelFutureWrappers = new ArrayList<>();
         for (ChannelFutureWrapper channelFutureWrapper : channelFutureWrappers) {
             String oldServerAddress = channelFutureWrapper.getHost() + ":" + channelFutureWrapper.getPort();
-            // 如果老的url没有，则说明被移除了
+            // 如果老的url没有，则说明已被移除
             if (!matchProviderUrl.contains(oldServerAddress)) {
                 continue;
             } else {

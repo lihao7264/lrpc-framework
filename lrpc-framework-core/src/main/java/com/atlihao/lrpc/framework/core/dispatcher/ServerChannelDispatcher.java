@@ -73,6 +73,7 @@ public class ServerChannelDispatcher {
                                 // 当前类的方法列表
                                 Method[] methods = targetObject.getClass().getDeclaredMethods();
                                 Object result = null;
+                                // 业务函数实际执行位置
                                 for (Method method : methods) {
                                     // 遍历获取方法列表
                                     // 通过反射找到目标对象，再执行目标方法并返回对应值

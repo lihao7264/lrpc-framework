@@ -62,12 +62,14 @@ public class JDKClientInvocationHandler implements InvocationHandler {
             if (object instanceof RpcInvocation) {
                 RpcInvocation rpcInvocationResp = (RpcInvocation) object;
                 // 正常结果
-                if (rpcInvocationResp.getE() == null) {
+                if (rpcInvocationResp.getRetry() == 0 || (rpcInvocationResp.getRetry() != 0 && rpcInvocationResp.getE() == null)) {
+                    RESP_MAP.remove(rpcInvocation.getUuid());
                     return rpcInvocationResp.getResponse();
                 } else if (rpcInvocationResp.getE() != null) {
                     // 每次重试后，都将retry值扣减1
                     if (rpcInvocationResp.getRetry() == 0) {
-                        throw  rpcInvocationResp.getE();
+                        RESP_MAP.remove(rpcInvocation.getUuid());
+                        throw rpcInvocationResp.getE();
                     }
                     //如果是因为超时的情况，才会触发重试规则，否则重试机制不生效
                     if (System.currentTimeMillis() - beginTime > timeOut) {
@@ -82,6 +84,8 @@ public class JDKClientInvocationHandler implements InvocationHandler {
                 }
             }
         }
+        // 应对一些请求超时的情况
+        RESP_MAP.remove(rpcInvocation.getUuid());
         throw new TimeoutException("Wait for response from server on client " + timeOut + "ms,retry times is " + retryTimes + ",service's name is " + rpcInvocation.getTargetServiceName() + "#" + rpcInvocation.getTargetMethod());
     }
 }

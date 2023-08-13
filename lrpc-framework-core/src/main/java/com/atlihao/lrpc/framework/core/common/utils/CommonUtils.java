@@ -91,7 +91,7 @@ public class CommonUtils {
     }
 
     public static List<ChannelFutureWrapper> convertToList(ChannelFutureWrapper[] channelFutureWrappers) {
-        List<ChannelFutureWrapper> channelFutureWrapperList = new ArrayList<>();
+        List<ChannelFutureWrapper> channelFutureWrapperList = new ArrayList<>(channelFutureWrappers.length);
         for (int i = 0; i < channelFutureWrappers.length; i++) {
             channelFutureWrapperList.add(channelFutureWrappers[i]);
         }

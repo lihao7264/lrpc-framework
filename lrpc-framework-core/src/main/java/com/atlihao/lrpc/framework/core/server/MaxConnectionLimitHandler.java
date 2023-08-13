@@ -42,7 +42,7 @@ public class MaxConnectionLimitHandler extends ChannelInboundHandlerAdapter {
      */
     private final LongAdder numDroppedConnections = new LongAdder();
     /**
-     *
+     * 是否定时打印日志
      */
     private final AtomicBoolean loggingScheduled = new AtomicBoolean(false);
 

@@ -2,10 +2,12 @@ package com.atlihao.lrpc.framework.core.filter.server;
 
 import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 import com.atlihao.lrpc.framework.core.common.annotations.SPI;
+import com.atlihao.lrpc.framework.core.common.exception.LRpcException;
 import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 import com.atlihao.lrpc.framework.core.filter.LServerFilter;
 import com.atlihao.lrpc.framework.core.server.ServiceWrapper;
 
+import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.RESP_MAP;
 import static com.atlihao.lrpc.framework.core.common.cache.CommonServerCache.PROVIDER_SERVICE_WRAPPER_MAP;
 
 /**
@@ -30,6 +32,11 @@ public class ServerTokenFilterImpl implements LServerFilter {
         if (!CommonUtils.isEmpty(token) && token.equals(matchToken)) {
             return;
         }
-        throw new RuntimeException("token is " + token + " , verify result is false!");
+        rpcInvocation.setRetry(0);
+        rpcInvocation.setE(new RuntimeException("service token is illegal for service " + rpcInvocation.getTargetServiceName()));
+        rpcInvocation.setResponse(null);
+        // 直接交给响应线程那边处理（响应线程在代理类内部的invoke函数中，那边会取出对应的uuid的值，然后判断）
+        RESP_MAP.put(rpcInvocation.getUuid(), rpcInvocation);
+        throw new LRpcException(rpcInvocation);
     }
 }

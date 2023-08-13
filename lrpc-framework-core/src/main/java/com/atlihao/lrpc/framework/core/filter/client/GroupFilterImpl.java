@@ -8,6 +8,8 @@ import com.atlihao.lrpc.framework.core.filter.LClientFilter;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.RESP_MAP;
+
 /**
  * @Description: 基于分组的过滤链路
  * @Author: lihao726726
@@ -29,7 +31,12 @@ public class GroupFilterImpl implements LClientFilter {
             }
         }
         if (CommonUtils.isEmptyList(src)) {
-            throw new RuntimeException("no provider match for group " + group);
+            rpcInvocation.setRetry(0);
+            rpcInvocation.setE(new RuntimeException("no provider match for service " + rpcInvocation.getTargetServiceName() + " in group " + group));
+            rpcInvocation.setResponse(null);
+            //直接交给响应线程那边处理（响应线程在代理类内部的invoke函数中，则会取出对应的uuid值，然后判断）
+            RESP_MAP.put(rpcInvocation.getUuid(), rpcInvocation);
+            throw new RuntimeException("no provider match for service " + rpcInvocation.getTargetServiceName() + " in group " + group);
         }
     }
 }

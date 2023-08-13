@@ -6,11 +6,11 @@ import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import com.atlihao.lrpc.framework.core.registry.zookeeper.ProviderNodeInfo;
 import com.atlihao.lrpc.framework.core.router.Selector;
+import com.esotericsoftware.minlog.Log;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -122,9 +122,19 @@ public class ConnectionHandler {
         String providerServiceName = rpcInvocation.getTargetServiceName();
         ChannelFutureWrapper[] channelFutureWrappers = SERVICE_ROUTER_MAP.get(providerServiceName);
         if (channelFutureWrappers == null || channelFutureWrappers.length == 0) {
-            throw new RuntimeException("no provider exist for " + providerServiceName);
+            rpcInvocation.setRetry(0);
+            rpcInvocation.setE(new RuntimeException("no provider exist for " + providerServiceName));
+            rpcInvocation.setResponse(null);
+            // 直接交给响应线程处理（响应线程在代理类内的invoke函数中，则会获取出对应的uuid值，然后判断）
+            RESP_MAP.put(rpcInvocation.getUuid(),rpcInvocation);
+            Log.error("channelFutureWrapper is null");
+            return null;
         }
-        // 走客户端的过滤器链
+        /**
+         * 走客户端的过滤器链
+         * 在客户端做分组的过滤操作
+         * 这里不能用Arrays.asList，因为它所生成的list是一个不可修改的list
+         */
         CLIENT_FILTER_CHAIN.doFilter(CommonUtils.convertToList(channelFutureWrappers), rpcInvocation);
         Selector selector = new Selector();
         selector.setProviderServiceName(providerServiceName);

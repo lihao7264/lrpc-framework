@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
+import static com.atlihao.lrpc.framework.core.common.constants.RpcConstants.DEFAULT_DECODE_CHAR;
+
 /**
  * @Description: RPC编码器
  * @Author: lihao726726
@@ -19,6 +21,7 @@ public class RpcEncoder extends MessageToByteEncoder<RpcProtocol> {
         byteBuf.writeShort(rpcProtocol.getMagicNumber());
         byteBuf.writeInt(rpcProtocol.getContentLength());
         byteBuf.writeBytes(rpcProtocol.getContent());
+        byteBuf.writeBytes(DEFAULT_DECODE_CHAR.getBytes());
     }
 
 }

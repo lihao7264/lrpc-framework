@@ -41,11 +41,31 @@ public class RpcConstants {
     /**
      * 默认线程数
      */
-    public static final Integer DEFAULT_THREAD_NUMS = 256;
+    public static final Integer DEFAULT_THREAD_NUMS = 200;
 
     /**
      * 默认队列大小
      */
-    public static final Integer DEFAULT_QUEUE_SIZE = 512;
+    public static final Integer DEFAULT_QUEUE_SIZE = 500;
+
+    /**
+     * 最大连接数
+     */
+    public static final Integer DEFAULT_MAX_CONNECTION_NUMS = DEFAULT_THREAD_NUMS + DEFAULT_QUEUE_SIZE;
+
+    /**
+     *
+     */
+    public static final String DEFAULT_DECODE_CHAR = "$_i0#Xsop1_$";
+
+    /**
+     * 服务端默认消息最大大小 10K
+     */
+    public static final int SERVER_DEFAULT_MSG_LENGTH = 1024 * 10;
+
+    /**
+     * 客户端默认消息最大大小 10K
+     */
+    public static final int CLIENT_DEFAULT_MSG_LENGTH = 1024 * 10;
 
 }

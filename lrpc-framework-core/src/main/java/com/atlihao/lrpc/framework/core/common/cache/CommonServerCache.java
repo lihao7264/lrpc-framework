@@ -1,10 +1,14 @@
 package com.atlihao.lrpc.framework.core.common.cache;
 
+import com.atlihao.lrpc.framework.core.common.ServerServiceSemaphoreWrapper;
 import com.atlihao.lrpc.framework.core.common.config.ServerConfig;
 import com.atlihao.lrpc.framework.core.dispatcher.ServerChannelDispatcher;
+import com.atlihao.lrpc.framework.core.filter.server.ServerAfterFilterChain;
+import com.atlihao.lrpc.framework.core.filter.server.ServerBeforeFilterChain;
 import com.atlihao.lrpc.framework.core.filter.server.ServerFilterChain;
 import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
+import com.atlihao.lrpc.framework.core.registry.zookeeper.AbstractRegister;
 import com.atlihao.lrpc.framework.core.serialize.SerializeFactory;
 import com.atlihao.lrpc.framework.core.server.ServiceWrapper;
 
@@ -39,7 +43,7 @@ public class CommonServerCache {
     /**
      * 注册服务
      */
-    public static RegistryService REGISTRY_SERVICE;
+    public static AbstractRegister REGISTRY_SERVICE;
 
     /**
      * 服务端序列化工厂
@@ -52,10 +56,13 @@ public class CommonServerCache {
     public static ServerConfig SERVER_CONFIG;
 
     /**
-     * 服务端过滤链
+     * 服务端前置过滤链
      */
-    public static ServerFilterChain SERVER_FILTER_CHAIN;
-
+    public static ServerBeforeFilterChain SERVER_BEFORE_FILTER_CHAIN;
+    /**
+     * 服务端后置过滤链
+     */
+    public static ServerAfterFilterChain SERVER_AFTER_FILTER_CHAIN;
 
     public static final Map<String, ServiceWrapper> PROVIDER_SERVICE_WRAPPER_MAP = new ConcurrentHashMap<>();
 
@@ -68,5 +75,10 @@ public class CommonServerCache {
      * 服务端处理
      */
     public static ServerChannelDispatcher SERVER_CHANNEL_DISPATCHER = new ServerChannelDispatcher();
+
+    /**
+     * <服务类名,服务限流对象>
+     */
+    public static final Map<String, ServerServiceSemaphoreWrapper> SERVER_SERVICE_SEMAPHORE_MAP = new ConcurrentHashMap<>(64);
 
 }

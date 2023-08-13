@@ -10,8 +10,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * @Description:
@@ -25,7 +24,13 @@ public class LRpcListenerLoader {
 
     private static List<LRpcListener> lRpcListenerList = new ArrayList<>();
 
-    private static ExecutorService eventThreadPool = Executors.newFixedThreadPool(2);
+    private static ExecutorService eventThreadPool = new ThreadPoolExecutor(2, 2, 1,
+            TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000), new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            return new Thread(r, "event-thread-pool");
+        }
+    });
 
     public static void registerListener(LRpcListener lRpcListener) {
         lRpcListenerList.add(lRpcListener);

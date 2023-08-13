@@ -27,6 +27,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         // 这里是传输参数更为详细的RpcInvocation对象字节数组。
         byte[] reqContent = rpcProtocol.getContent();
         RpcInvocation rpcInvocation = CLIENT_SERIALIZE_FACTORY.deserialize(reqContent, RpcInvocation.class);
+        if (rpcInvocation.getE() != null) {
+            rpcInvocation.getE().printStackTrace();
+        }
         // 如果是单纯异步模式的话，响应Map集合中不会存在映射值
         Object async = rpcInvocation.getAttachments().get("async");
         if (async != null && Boolean.valueOf(String.valueOf(async))) {

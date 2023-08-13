@@ -53,5 +53,8 @@ public class ClientConfig {
      */
     private Long timeOut;
 
-
+    /**
+     * 客户端最大响应数据体积
+     */
+    private Integer maxServerRespDataSize;
 }

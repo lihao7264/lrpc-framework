@@ -23,7 +23,11 @@ public class RpcReferenceWrapper<T> {
     private Map<String, Object> attatchments = new ConcurrentHashMap<>();
 
     public boolean isAsync() {
-        return Boolean.valueOf(String.valueOf(attatchments.get("async")));
+        Object r = attatchments.get("async");
+        if (r == null || r.equals(false)) {
+            return false;
+        }
+        return true;
     }
 
     public void setAsync(boolean async) {
@@ -60,6 +64,30 @@ public class RpcReferenceWrapper<T> {
 
     public void setTimeOut(Long timeOut) {
         attatchments.put("timeOut", timeOut);
+    }
+
+    /**
+     * 失败重试次数
+     */
+    public int getRetry(){
+        if(attatchments.get("retry")==null){
+            return 0;
+        }else {
+            return (int) attatchments.get("retry");
+        }
+    }
+
+    public void setRetry(int retry){
+        this.attatchments.put("retry",retry);
+    }
+
+    /**
+     * 设置容错策略
+     *
+     * @param tolerant
+     */
+    public void setTolerant(String tolerant){
+        this.attatchments.put("tolerant",tolerant);
     }
 
 }

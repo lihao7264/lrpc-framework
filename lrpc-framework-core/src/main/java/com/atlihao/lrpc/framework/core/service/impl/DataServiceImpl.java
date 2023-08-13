@@ -17,16 +17,37 @@ public class DataServiceImpl implements DataService {
 
     @Override
     public String sendData(String body) {
+        try {
+            Thread.sleep(8000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.out.println("己收到的参数长度：" + body.length());
         return "success";
     }
 
     @Override
     public List<String> getList() {
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         ArrayList arrayList = new ArrayList();
         arrayList.add("test1");
         arrayList.add("test2");
         arrayList.add("test3");
         return arrayList;
+    }
+
+    @Override
+    public void testError() {
+        System.out.println(1 / 0);
+    }
+
+    @Override
+    public String testErrorV2() {
+        throw new RuntimeException("测试异常");
+//        return "three";
     }
 }

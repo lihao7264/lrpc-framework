@@ -27,6 +27,9 @@ public class PropertiesBootstrap {
     public static final String CLIENT_DEFAULT_TIME_OUT = "lrpc.client.default.timeout";
     public static final String SERVER_BIZ_THREAD_NUMS = "lrpc.server.biz.thread.nums";
     public static final String SERVER_QUEUE_SIZE = "lrpc.server.queue.size";
+    public static final String SERVER_MAX_CONNECTION = "lrpc.server.max.connection";
+    public static final String SERVER_MAX_DATA_SIZE = "lrpc.server.max.data.size";
+    public static final String CLIENT_MAX_DATA_SIZE = "lrpc.client.max.data.size";
 
     /**
      * 加载服务端配置
@@ -47,6 +50,8 @@ public class PropertiesBootstrap {
         serverConfig.setServerSerialize(PropertiesLoader.getPropertiesStrDefault(SERVER_SERIALIZE_TYPE, JDK_SERIALIZE_TYPE));
         serverConfig.setServerBizThreadNums(PropertiesLoader.getPropertiesIntegerDefault(SERVER_BIZ_THREAD_NUMS, DEFAULT_THREAD_NUMS));
         serverConfig.setServerQueueSize(PropertiesLoader.getPropertiesIntegerDefault(SERVER_QUEUE_SIZE, DEFAULT_QUEUE_SIZE));
+        serverConfig.setMaxConnections(PropertiesLoader.getPropertiesIntegerDefault(SERVER_MAX_CONNECTION, DEFAULT_MAX_CONNECTION_NUMS));
+        serverConfig.setMaxServerRequestData(PropertiesLoader.getPropertiesIntegerDefault(SERVER_MAX_DATA_SIZE, SERVER_DEFAULT_MSG_LENGTH));
         return serverConfig;
     }
 
@@ -69,6 +74,7 @@ public class PropertiesBootstrap {
         clientConfig.setRouterStrategy(PropertiesLoader.getPropertiesStrDefault(ROUTER_TYPE, RANDOM_ROUTER_TYPE));
         clientConfig.setClientSerialize(PropertiesLoader.getPropertiesStrDefault(CLIENT_SERIALIZE_TYPE, JDK_SERIALIZE_TYPE));
         clientConfig.setTimeOut(PropertiesLoader.getPropertiesLongDefault(CLIENT_DEFAULT_TIME_OUT, DEFAULT_TIMEOUT));
+        clientConfig.setMaxServerRespDataSize(PropertiesLoader.getPropertiesIntegerDefault(CLIENT_MAX_DATA_SIZE, CLIENT_DEFAULT_MSG_LENGTH));
         return clientConfig;
     }
 

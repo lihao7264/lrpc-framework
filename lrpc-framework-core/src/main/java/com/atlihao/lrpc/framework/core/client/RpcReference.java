@@ -2,6 +2,8 @@ package com.atlihao.lrpc.framework.core.client;
 
 import com.atlihao.lrpc.framework.core.proxy.ProxyFactory;
 
+import static com.atlihao.lrpc.framework.core.common.cache.CommonClientCache.CLIENT_CONFIG;
+
 /**
  * @Description:
  * @Author: lihao726726
@@ -26,6 +28,19 @@ public class RpcReference {
      * @return
      */
     public <T> T get(RpcReferenceWrapper<T> referenceWrapper) throws Throwable {
+        initGlobalRpcReferenceWrapperConfig(referenceWrapper);
         return proxyFactory.getProxy(referenceWrapper);
+    }
+
+
+    /**
+     * 初始化远程调用的一些全局配置（比如：超时）
+     *
+     * @param rpcReferenceWrapper
+     */
+    private void initGlobalRpcReferenceWrapperConfig(RpcReferenceWrapper rpcReferenceWrapper) {
+        if (rpcReferenceWrapper.getTimeout() == null) {
+            rpcReferenceWrapper.setTimeOut(CLIENT_CONFIG.getTimeOut());
+        }
     }
 }

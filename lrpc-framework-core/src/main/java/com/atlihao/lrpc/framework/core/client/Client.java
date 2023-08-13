@@ -33,12 +33,16 @@ import com.atlihao.lrpc.framework.core.serialize.jdk.JdkSerializeFactory;
 import com.atlihao.lrpc.framework.core.serialize.kryo.KryoSerializeFactory;
 import com.atlihao.lrpc.framework.interfaces.DataService;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -80,6 +84,8 @@ public class Client {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 // 管道中初始化一些逻辑：包含编解码器和客户端响应类
+                ByteBuf delimiter = Unpooled.copiedBuffer(DEFAULT_DECODE_CHAR.getBytes());
+                ch.pipeline().addLast(new DelimiterBasedFrameDecoder(clientConfig.getMaxServerRespDataSize(), delimiter));
                 ch.pipeline().addLast(new RpcEncoder());
                 ch.pipeline().addLast(new RpcDecoder());
                 ch.pipeline().addLast(new ClientHandler());
@@ -171,10 +177,14 @@ public class Client {
                     RpcInvocation rpcInvocation = SEND_QUEUE.take();
                     ChannelFuture channelFuture = ConnectionHandler.getChannelFuture(rpcInvocation);
                     if (channelFuture != null) {
-                        // 将RpcInvocation封装到RpcProtocol对象中，再发送给服务端，这里正好对应ServerHandler
-                        RpcProtocol rpcProtocol = new RpcProtocol(CLIENT_SERIALIZE_FACTORY.serialize(rpcInvocation));
-                        // Netty的通道负责发送数据给服务端
-                        channelFuture.channel().writeAndFlush(rpcProtocol);
+                        Channel channel = channelFuture.channel();
+                        //如果出现服务端中断的情况，则需兼容下
+                        if (channel.isOpen()) {
+                            // 将RpcInvocation封装到RpcProtocol对象中，再发送给服务端，这里正好对应ServerHandler
+                            RpcProtocol rpcProtocol = new RpcProtocol(CLIENT_SERIALIZE_FACTORY.serialize(rpcInvocation));
+                            // Netty的通道负责发送数据给服务端
+                            channel.writeAndFlush(rpcProtocol);
+                        }
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -185,6 +195,7 @@ public class Client {
 
     /**
      * spi扩展的加载部分:客户端初始化环节的加载策略
+     *
      * @throws IOException
      * @throws ClassNotFoundException
      * @throws IllegalAccessException

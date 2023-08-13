@@ -75,7 +75,7 @@ public class ServiceUpdateListener implements LRpcListener<LRpcEvent> {
             }
         }
         finalChannelFutureWrappers.addAll(newChannelFutureWrapper);
-        // 最终更新服务在这里
+        // 最终在这里更新服务
         CONNECT_MAP.put(urlChangeWrapper.getServiceName(), finalChannelFutureWrappers);
         Selector selector = new Selector();
         selector.setProviderServiceName(urlChangeWrapper.getServiceName());

@@ -10,6 +10,7 @@ import com.atlihao.lrpc.framework.core.common.utils.CommonUtils;
 import com.atlihao.lrpc.framework.core.registry.RegistryService;
 import com.atlihao.lrpc.framework.core.registry.URL;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 
@@ -139,9 +140,11 @@ public class ZookeeperRegister extends AbstractRegister implements RegistryServi
                 String path = watchedEvent.getPath();
                 System.out.println("[watchNodeDataChange] 监听到zk节点下的" + path + "节点数据发生变更");
                 String nodeData = zkClient.getNodeData(path);
-                ProviderNodeInfo providerNodeInfo = URL.buildURLFromUrlStr(nodeData);
-                LRpcEvent iRpcEvent = new LRpcNodeChangeEvent(providerNodeInfo);
-                LRpcListenerLoader.sendEvent(iRpcEvent);
+                if(StringUtils.isNotBlank(nodeData)){
+                    ProviderNodeInfo providerNodeInfo = URL.buildURLFromUrlStr(nodeData);
+                    LRpcEvent iRpcEvent = new LRpcNodeChangeEvent(providerNodeInfo);
+                    LRpcListenerLoader.sendEvent(iRpcEvent);
+                }
                 watchNodeDataChange(newServerNodePath);
             }
         });

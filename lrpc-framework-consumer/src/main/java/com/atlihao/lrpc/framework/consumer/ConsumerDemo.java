@@ -5,12 +5,11 @@ import com.atlihao.lrpc.framework.core.client.ConnectionHandler;
 import com.atlihao.lrpc.framework.core.client.RpcReference;
 import com.atlihao.lrpc.framework.core.client.RpcReferenceWrapper;
 import com.atlihao.lrpc.framework.interfaces.DataService;
+import com.google.common.base.Throwables;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 
 /**
  * @Description:
@@ -29,14 +28,22 @@ public class ConsumerDemo {
         rpcReferenceWrapper.setTargetClass(DataService.class);
         rpcReferenceWrapper.setGroup("dev");
         rpcReferenceWrapper.setServiceToken("token-a");
-        rpcReferenceWrapper.setTimeOut(3000L);
+        rpcReferenceWrapper.setTimeOut(10000L);
+        // 失败重试次数
+        rpcReferenceWrapper.setRetry(0);
         // 在初始化之前必须要设置对应的上下文
         DataService dataService = rpcReference.get(rpcReferenceWrapper);
         client.doSubscribeService(DataService.class);
         ConnectionHandler.setBootstrap(client.getBootstrap());
         client.doConnectServer();
         client.startClient();
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        ExecutorService executorService = new ThreadPoolExecutor(100, 100, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10000), new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                return new Thread(r, "consumer-executor");
+            }
+        });
+        List<FutureTask<String>> futureTaskList = new ArrayList<>();
         for (int i = 0; i < 10000; i++) {
             try {
                 FutureTask<String> futureTask = new FutureTask<String>(new Callable<String>() {
@@ -46,16 +53,24 @@ public class ConsumerDemo {
                     }
                 });
                 executorService.submit(futureTask);
-                List<String> resultList = dataService.getList();
-                System.out.println("result List is :" + resultList);
-                System.out.println("等待一段时间后");
-                String result = futureTask.get();
-                System.out.println(result);
+                futureTaskList.add(futureTask);
+//                List<String> resultList = dataService.getList();
+//                System.out.println("result List is :" + resultList);
+//                System.out.println("等待一段时间后");
             } catch (Exception e) {
-                System.out.println(i);
-                e.printStackTrace();
+                System.out.println(Throwables.getStackTraceAsString(e));
+//                System.out.println(i);
+//                e.printStackTrace();
             }
         }
-        System.out.println("结束调用60000次");
+        for (FutureTask<String> futureTask : futureTaskList) {
+            try {
+                String result = futureTask.get();
+                System.out.println("结果:" + result);
+            } catch (Exception e) {
+                System.out.println("异常:" + Throwables.getStackTraceAsString(e));
+            }
+        }
+        System.out.println("结束调用10000次");
     }
 }

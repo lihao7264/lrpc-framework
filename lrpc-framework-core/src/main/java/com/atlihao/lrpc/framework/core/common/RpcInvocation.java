@@ -52,6 +52,16 @@ public class RpcInvocation {
      */
     private Object response;
 
+    /**
+     * 异常信息
+     */
+    private Throwable e;
+
+    /**
+     * 重试次数
+     */
+    private int retry;
+
     private Map<String,Object> attachments = new HashMap<>();
 
 }

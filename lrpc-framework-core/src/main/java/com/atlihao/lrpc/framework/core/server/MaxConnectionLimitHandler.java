@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * @Description:
+ * @Description: 最大连接数限制处理器
  * @Author: lihao726726
  * @CreateDate: 2023/8/13 10:26 上午
  * @UpdateUser: lihao726726

@@ -3,6 +3,7 @@ package com.atlihao.lrpc.framework.core.dispatcher;
 import com.atlihao.lrpc.framework.core.common.RpcInvocation;
 import com.atlihao.lrpc.framework.core.common.RpcProtocol;
 import com.atlihao.lrpc.framework.core.common.exception.LRpcException;
+import com.atlihao.lrpc.framework.core.server.NamedThreadFactory;
 import com.atlihao.lrpc.framework.core.server.ServerChannelReadData;
 
 import java.lang.reflect.Method;
@@ -30,9 +31,9 @@ public class ServerChannelDispatcher {
 
     public void init(int queueSize, int bizThreadNums) {
         RPC_DATA_QUEUE = new ArrayBlockingQueue<>(queueSize);
-        executorService = new ThreadPoolExecutor(bizThreadNums, bizThreadNums,
-                0L, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(512));
+        executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                60L, TimeUnit.MILLISECONDS,
+                new SynchronousQueue<>(), new NamedThreadFactory("lrpc", true));
     }
 
     public void add(ServerChannelReadData serverChannelReadData) {

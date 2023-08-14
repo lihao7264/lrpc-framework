@@ -1,0 +1,4 @@
+kryo=com.atlihao.lrpc.framework.core.serialize.kryo.KryoSerializeFactory
+jdk=com.atlihao.lrpc.framework.core.serialize.jdk.JdkSerializeFactory
+hessian=com.atlihao.lrpc.framework.core.serialize.hessian.HessianSerializeFactory
+fastJson=com.atlihao.lrpc.framework.core.serialize.fastjson.FastJsonSerializeFactory

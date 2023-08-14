@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.atlihao.lrpc.framework.spring.starter.config.LRpcServerAutoConfiguration,\
+com.atlihao.lrpc.framework.spring.starter.config.LRpcClientAutoConfiguration

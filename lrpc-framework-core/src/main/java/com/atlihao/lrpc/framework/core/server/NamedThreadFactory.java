@@ -5,9 +5,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @Description:  重写线程工厂类.
- * @Author: 仲阳-李豪
+ * @Author: lihao726726
  * @CreateDate: 2023/8/14 8:12 上午
- * @UpdateUser: 仲阳-李豪
+ * @UpdateUser: lihao726726
  * @UpdateDate: 2023/8/14 8:12 上午
  * @Version: 1.0.0
  */
